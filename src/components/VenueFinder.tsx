@@ -8,7 +8,7 @@ import type { VenueCard } from "@/lib/venues";
 
 const VenueMap = dynamic(() => import("./VenueMap"), {
   ssr: false,
-  loading: () => <div className="h-full w-full animate-pulse bg-neutral-200" />,
+  loading: () => <div className="absolute inset-0 animate-pulse bg-neutral-200" />,
 });
 
 type Point = { lat: number; lng: number };
@@ -70,7 +70,7 @@ export function VenueFinder({ venues }: { venues: VenueCard[] }) {
 
   return (
     <div className="flex flex-1 flex-col md:h-[calc(100vh-57px)] md:flex-row">
-      <div className="h-[45vh] md:h-full md:flex-1">
+      <div className="relative h-[45vh] md:h-auto md:flex-1">
         <VenueMap venues={venues} center={center} zoom={zoom} user={user} />
       </div>
       <aside className="w-full overflow-y-auto border-l border-neutral-200 bg-white p-4 md:max-w-sm">

@@ -28,7 +28,7 @@ export default function VenueMap({
   user: Point | null;
 }) {
   return (
-    <MapContainer center={[center.lat, center.lng]} zoom={zoom} className="h-full w-full" scrollWheelZoom>
+    <MapContainer center={[center.lat, center.lng]} zoom={zoom} className="absolute inset-0 z-0" scrollWheelZoom>
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
