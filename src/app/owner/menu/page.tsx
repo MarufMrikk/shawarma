@@ -24,10 +24,10 @@ export default async function OwnerMenuPage() {
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
       <section className="space-y-6">
-        <h1 className="text-xl font-bold">Меню</h1>
-        {categories.length === 0 && <p className="text-neutral-500">Создайте первую категорию справа.</p>}
+        <h1 className="sign text-[44px]">Меню</h1>
+        {categories.length === 0 && <p className="text-muted">Создайте первую категорию справа.</p>}
         {categories.map((cat) => (
-          <div key={cat.id} className="rounded-xl border border-neutral-200 bg-white p-4">
+          <div key={cat.id} className="rounded-xl border border-line bg-white p-4">
             <div className="flex flex-wrap items-start gap-2">
               <ActionForm action={updateCategory} className="flex flex-1 flex-wrap items-center gap-2">
                 <input type="hidden" name="id" value={cat.id} />
@@ -44,7 +44,7 @@ export default async function OwnerMenuPage() {
               <ActionForm action={deleteCategory}>
                 <input type="hidden" name="id" value={cat.id} />
                 <SubmitButton
-                  className="btn-secondary text-sm text-red-600"
+                  className="btn-secondary text-sm text-chili"
                   confirm={`Удалить категорию «${cat.name}» вместе со всеми позициями?`}
                 >
                   Удалить
@@ -52,15 +52,15 @@ export default async function OwnerMenuPage() {
               </ActionForm>
             </div>
 
-            <ul className="mt-3 divide-y divide-neutral-100">
+            <ul className="mt-3 divide-y divide-line">
               {cat.items.map((item) => (
                 <li key={item.id} className="flex items-center gap-3 py-2 text-sm">
-                  <Link href={`/owner/menu/${item.id}`} className="flex-1 hover:text-orange-600">
-                    <span className={item.available ? "font-medium" : "text-neutral-400 line-through"}>
+                  <Link href={`/owner/menu/${item.id}`} className="flex-1 hover:text-chili">
+                    <span className={item.available ? "font-medium" : "text-muted/70 line-through"}>
                       {item.name}
                     </span>
                     {item._count.groups > 0 && (
-                      <span className="ml-2 text-neutral-500">добавок: {item._count.groups}</span>
+                      <span className="ml-2 text-muted">добавок: {item._count.groups}</span>
                     )}
                   </Link>
                   <span>{formatMoney(item.price, venue.currency)}</span>
@@ -73,14 +73,14 @@ export default async function OwnerMenuPage() {
                   </ActionForm>
                 </li>
               ))}
-              {cat.items.length === 0 && <li className="py-2 text-sm text-neutral-500">Нет позиций</li>}
+              {cat.items.length === 0 && <li className="py-2 text-sm text-muted">Нет позиций</li>}
             </ul>
           </div>
         ))}
       </section>
 
       <aside className="space-y-6">
-        <div className="rounded-xl border border-neutral-200 bg-white p-4">
+        <div className="rounded-xl border border-line bg-white p-4">
           <h2 className="mb-3 font-semibold">Новая категория</h2>
           <ActionForm action={createCategory} className="space-y-2">
             <input name="name" placeholder="Например, «Шаверма»" className="input" required />
@@ -89,7 +89,7 @@ export default async function OwnerMenuPage() {
         </div>
 
         {categories.length > 0 && (
-          <div className="rounded-xl border border-neutral-200 bg-white p-4">
+          <div className="rounded-xl border border-line bg-white p-4">
             <h2 className="mb-3 font-semibold">Новая позиция</h2>
             <ActionForm action={createItem} className="space-y-2">
               <select name="categoryId" className="input" required>

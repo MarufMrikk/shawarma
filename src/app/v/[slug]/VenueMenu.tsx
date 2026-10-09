@@ -6,6 +6,7 @@ import type { MenuCategoryData } from "@/lib/menu";
 import { formatMoney } from "@/lib/money";
 import { ARRIVE_OPTIONS } from "@/lib/orderStatus";
 import { priceLine, type MenuItemData, type ModifierSnapshot } from "@/lib/pricing";
+import { Pictogram, pictogramFor } from "@/components/Pictogram";
 import { placeOrder } from "./actions";
 
 type CartLine = { key: string; itemId: string; quantity: number; optionIds: string[] };
@@ -159,7 +160,7 @@ export function VenueMenu({
               <a
                 key={cat.id}
                 href={`#cat-${cat.id}`}
-                className="shrink-0 rounded-full border border-line bg-white px-4 py-1.5 text-sm font-medium hover:border-board"
+                className="shrink-0 rounded-md border-2 border-board/15 bg-white px-3.5 py-1.5 text-sm font-semibold hover:border-board"
               >
                 {cat.name}
               </a>
@@ -169,40 +170,45 @@ export function VenueMenu({
       )}
 
       <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 pb-32 pt-6 lg:grid-cols-[1fr_360px] lg:pb-12">
-        <div className="rounded-3xl bg-board px-5 py-6 text-white sm:px-8 sm:py-8">
+        <div>
           {!canOrder && (
-            <p className="mb-6 rounded-xl bg-white/10 px-4 py-3 text-sm text-white/80">
-              Сейчас заказы не принимаются — меню можно посмотреть.
+            <p className="mb-6 rounded-lg border-2 border-chili bg-white px-4 py-3 text-sm font-medium text-chili">
+              Сейчас шавермная не принимает заказы. Меню можно посмотреть.
             </p>
           )}
-          {menu.length === 0 && <p className="text-white/70">Меню пока пустое.</p>}
+          {menu.length === 0 && <p className="text-muted">Меню пока пустое.</p>}
           {menu.map((cat) => (
-            <section key={cat.id} id={`cat-${cat.id}`} className="scroll-mt-20 [&+&]:mt-10">
-              <h2 className="mb-4 font-display text-lg font-bold text-turmeric">{cat.name}</h2>
-              <ul className="space-y-5">
+            <section key={cat.id} id={`cat-${cat.id}`} className="scroll-mt-20 [&+&]:mt-12">
+              <div className="flex items-end gap-3 border-b-2 border-board pb-2">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-kiosk text-board">
+                  <Pictogram kind={pictogramFor(cat.name)} className="h-8 w-8" />
+                </span>
+                <h2 className="sign text-[40px]">{cat.name}</h2>
+              </div>
+              <ul className="divide-y divide-line">
                 {cat.items.map((item) => {
                   const qty = qtyByItem.get(item.id) ?? 0;
                   return (
-                    <li key={item.id} className="flex items-start gap-4">
+                    <li key={item.id} className="flex items-center gap-4 py-4">
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-baseline">
-                          <span className="text-[17px] font-semibold">{item.name}</span>
-                          <span className="leader" aria-hidden />
-                          <span className="font-display text-[15px] font-bold text-turmeric">
-                            {formatMoney(item.price, currency)}
-                          </span>
-                        </div>
-                        {item.description && <p className="mt-1 text-sm text-white/60">{item.description}</p>}
+                        <div className="text-[17px] font-bold">{item.name}</div>
+                        {item.description && <p className="mt-0.5 text-sm text-muted">{item.description}</p>}
+                        {item.groups.length > 0 && (
+                          <p className="mt-1 text-xs font-medium text-muted">
+                            {item.groups.map((g) => g.name.toLowerCase()).join(", ")} на выбор
+                          </p>
+                        )}
                       </div>
+                      <span className="price shrink-0 text-[34px]">{formatMoney(item.price, currency)}</span>
                       <button
-                        className="relative mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-chili text-2xl leading-none font-medium transition-colors hover:bg-chili-dark disabled:bg-white/15 disabled:text-white/40"
+                        className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-board text-2xl leading-none font-medium text-kiosk transition-colors hover:bg-chili hover:text-white disabled:bg-line disabled:text-muted"
                         disabled={!canOrder}
                         onClick={() => onItemClick(item)}
                         aria-label={`Добавить «${item.name}»`}
                       >
                         +
                         {qty > 0 && (
-                          <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-turmeric px-1 text-xs font-bold text-board">
+                          <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-chili px-1 text-xs font-bold text-white">
                             {qty}
                           </span>
                         )}
@@ -221,12 +227,12 @@ export function VenueMenu({
       </div>
 
       {count > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white p-3 lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-board bg-kiosk p-3 lg:hidden">
           <button className="btn-primary w-full justify-between py-3.5" onClick={() => setSheetOpen(true)}>
             <span>
               Корзина: {count} {plural(count, "позиция", "позиции", "позиций")}
             </span>
-            <span className="font-display">{formatMoney(total, currency)}</span>
+            <span className="font-display text-2xl font-extrabold leading-none">{formatMoney(total, currency)}</span>
           </button>
         </div>
       )}
@@ -267,14 +273,14 @@ function Sheet({ children, onClose, label }: { children: React.ReactNode; onClos
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-end justify-center bg-board/50 sm:items-center"
+      className="fixed inset-0 z-[1000] flex items-end justify-center bg-board/60 sm:items-center"
       onClick={onClose}
       role="dialog"
       aria-modal
       aria-label={label}
     >
       <div
-        className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-page p-3 sm:rounded-3xl"
+        className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-page p-3 sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {children}
@@ -315,8 +321,8 @@ function CartPanel({
   onSubmit: (e: React.FormEvent) => void;
 }) {
   return (
-    <div className="receipt rounded-t-2xl px-5 pt-5 shadow-[0_10px_30px_rgba(42,31,61,.08)]">
-      <h2 className="font-display text-lg font-bold">Ваш заказ</h2>
+    <div className="receipt rounded-t-lg border-x-2 border-t-2 border-board px-5 pt-5">
+      <h2 className="sign text-[36px]">Ваш заказ</h2>
       {lines.length === 0 ? (
         <p className="mt-2 pb-2 text-sm text-muted">Нажмите «+» у позиции в меню, чтобы добавить её сюда.</p>
       ) : (
@@ -354,7 +360,7 @@ function CartPanel({
 
           <div className="flex items-baseline justify-between border-t-2 border-dashed border-line pt-3">
             <span className="font-semibold">Итого</span>
-            <span className="font-display text-xl font-bold">{formatMoney(total, currency)}</span>
+            <span className="sign text-[34px]">{formatMoney(total, currency)}</span>
           </div>
 
           <form onSubmit={onSubmit} className="mt-5 space-y-3">
@@ -396,8 +402,8 @@ function CartPanel({
                     key={m}
                     onClick={() => setArriveIn(m)}
                     aria-pressed={arriveIn === m}
-                    className={`rounded-xl border py-2 text-sm font-semibold transition-colors ${
-                      arriveIn === m ? "border-board bg-board text-white" : "border-line bg-white hover:border-board"
+                    className={`rounded-lg border-2 py-2 text-sm font-semibold transition-colors ${
+                      arriveIn === m ? "border-board bg-board text-kiosk" : "border-line bg-white hover:border-board"
                     }`}
                   >
                     {m} мин
@@ -448,8 +454,8 @@ function ItemOptions({
   }
 
   return (
-    <div className="rounded-2xl bg-white p-5">
-      <h3 className="font-display text-xl font-bold">{item.name}</h3>
+    <div className="rounded-xl bg-white p-5">
+      <h3 className="sign text-[40px]">{item.name}</h3>
       {item.description && <p className="mt-1 text-sm text-muted">{item.description}</p>}
       <div className="mt-5 space-y-5">
         {item.groups.map((g) => (
@@ -473,13 +479,13 @@ function ItemOptions({
                     key={o.id}
                     aria-pressed={on}
                     onClick={() => toggle(g.id, o.id)}
-                    className={`rounded-xl border px-3 py-2 text-sm transition-colors ${
-                      on ? "border-board bg-board text-white" : "border-line bg-white hover:border-board"
+                    className={`rounded-lg border-2 px-3 py-2 text-sm font-medium transition-colors ${
+                      on ? "border-board bg-kiosk text-board" : "border-line bg-white hover:border-board"
                     }`}
                   >
                     {o.name}
                     {o.priceDelta !== 0 && (
-                      <span className={on ? "ml-1 text-turmeric" : "ml-1 text-muted"}>
+                      <span className={on ? "ml-1 font-semibold text-chili" : "ml-1 text-muted"}>
                         +{formatMoney(o.priceDelta, currency)}
                       </span>
                     )}

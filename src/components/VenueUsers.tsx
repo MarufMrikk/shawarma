@@ -33,16 +33,16 @@ export async function VenueUsers({
     <div className="space-y-4">
       <ul className="space-y-2 text-sm">
         {rows.map((u) => (
-          <li key={u.id} className="rounded-lg border border-neutral-200 bg-white p-3">
+          <li key={u.id} className="rounded-lg border border-line bg-white p-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-medium">{u.name}</span>
-              <span className="text-neutral-500">{u.email}</span>
-              <span className="rounded bg-neutral-100 px-2 text-xs">{ROLE_LABELS[u.role]}</span>
-              {!u.passwordHash && <span className="text-xs text-orange-600">приглашён</span>}
+              <span className="text-muted">{u.email}</span>
+              <span className="rounded bg-page px-2 text-xs">{ROLE_LABELS[u.role]}</span>
+              {!u.passwordHash && <span className="text-xs text-chili">приглашён</span>}
               {removeAction && u.role === "STAFF" && (
                 <ActionForm action={removeAction} className="ml-auto">
                   <input type="hidden" name="id" value={u.id} />
-                  <SubmitButton className="text-xs text-red-600 underline" confirm={`Удалить ${u.email}?`}>
+                  <SubmitButton className="text-xs text-chili underline" confirm={`Удалить ${u.email}?`}>
                     удалить
                   </SubmitButton>
                 </ActionForm>
@@ -50,16 +50,16 @@ export async function VenueUsers({
             </div>
             {u.link && (
               <div className="mt-2">
-                <div className="text-xs text-neutral-500">Ссылка-приглашение (отправьте её сотруднику):</div>
+                <div className="text-xs text-muted">Ссылка-приглашение (отправьте её сотруднику):</div>
                 <input readOnly value={u.link} className="input mt-1 font-mono text-xs" />
               </div>
             )}
             {!u.passwordHash && !u.link && (
-              <div className="mt-1 text-xs text-red-600">Приглашение истекло — отправьте заново формой ниже.</div>
+              <div className="mt-1 text-xs text-chili">Приглашение истекло — отправьте заново формой ниже.</div>
             )}
           </li>
         ))}
-        {rows.length === 0 && <li className="text-neutral-500">Нет сотрудников</li>}
+        {rows.length === 0 && <li className="text-muted">Нет сотрудников</li>}
       </ul>
 
       <ActionForm action={inviteAction} className="flex flex-wrap items-end gap-2 text-sm">

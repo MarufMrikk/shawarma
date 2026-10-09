@@ -28,12 +28,12 @@ export default async function MenuItemPage({ params }: PageProps<"/owner/menu/[i
 
   return (
     <div className="space-y-8">
-      <Link href="/owner/menu" className="text-sm text-neutral-600 hover:text-orange-600">
+      <Link href="/owner/menu" className="text-sm text-muted hover:text-chili">
         ← Меню
       </Link>
 
-      <section className="max-w-lg rounded-xl border border-neutral-200 bg-white p-4">
-        <h1 className="mb-3 text-xl font-bold">{item.name}</h1>
+      <section className="max-w-lg rounded-xl border border-line bg-white p-4">
+        <h1 className="sign mb-3 text-[44px]">{item.name}</h1>
         <ActionForm action={updateItem} className="space-y-3">
           <input type="hidden" name="id" value={item.id} />
           <label className="block text-sm">
@@ -76,9 +76,9 @@ export default async function MenuItemPage({ params }: PageProps<"/owner/menu/[i
           </label>
           <SubmitButton>Сохранить</SubmitButton>
         </ActionForm>
-        <ActionForm action={deleteItem} className="mt-4 border-t border-neutral-100 pt-4">
+        <ActionForm action={deleteItem} className="mt-4 border-t border-line pt-4">
           <input type="hidden" name="id" value={item.id} />
-          <SubmitButton className="btn-secondary text-sm text-red-600" confirm="Удалить позицию?">
+          <SubmitButton className="btn-secondary text-sm text-chili" confirm="Удалить позицию?">
             Удалить позицию
           </SubmitButton>
         </ActionForm>
@@ -86,13 +86,13 @@ export default async function MenuItemPage({ params }: PageProps<"/owner/menu/[i
 
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">Добавки</h2>
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-muted">
           Группа с минимумом 1 и максимумом 1 — обязательный выбор (например, размер). Минимум 0 — по желанию
           (соусы, «без лука»).
         </p>
 
         {item.groups.map((g) => (
-          <div key={g.id} className="max-w-2xl rounded-xl border border-neutral-200 bg-white p-4">
+          <div key={g.id} className="max-w-2xl rounded-xl border border-line bg-white p-4">
             <div className="flex flex-wrap items-end gap-2">
               <ActionForm action={updateGroup} className="flex flex-1 flex-wrap items-end gap-2">
                 <input type="hidden" name="id" value={g.id} />
@@ -113,7 +113,7 @@ export default async function MenuItemPage({ params }: PageProps<"/owner/menu/[i
               <ActionForm action={deleteGroup}>
                 <input type="hidden" name="id" value={g.id} />
                 <input type="hidden" name="menuItemId" value={item.id} />
-                <SubmitButton className="btn-secondary text-sm text-red-600" confirm={`Удалить группу «${g.name}»?`}>
+                <SubmitButton className="btn-secondary text-sm text-chili" confirm={`Удалить группу «${g.name}»?`}>
                   Удалить
                 </SubmitButton>
               </ActionForm>
@@ -123,10 +123,10 @@ export default async function MenuItemPage({ params }: PageProps<"/owner/menu/[i
               {g.options.map((o) => (
                 <li key={o.id} className="flex items-center gap-3">
                   <span className="flex-1">{o.name}</span>
-                  {o.priceDelta !== 0 && <span className="text-neutral-500">+{formatMoney(o.priceDelta, currency)}</span>}
+                  {o.priceDelta !== 0 && <span className="text-muted">+{formatMoney(o.priceDelta, currency)}</span>}
                   <ActionForm action={deleteOption}>
                     <input type="hidden" name="id" value={o.id} />
-                    <SubmitButton className="text-xs text-red-600 underline">удалить</SubmitButton>
+                    <SubmitButton className="text-xs text-chili underline">удалить</SubmitButton>
                   </ActionForm>
                 </li>
               ))}
@@ -146,7 +146,7 @@ export default async function MenuItemPage({ params }: PageProps<"/owner/menu/[i
           </div>
         ))}
 
-        <div className="max-w-2xl rounded-xl border border-dashed border-neutral-300 p-4">
+        <div className="max-w-2xl rounded-xl border border-dashed border-line p-4">
           <h3 className="mb-2 font-medium">Новая группа добавок</h3>
           <ActionForm action={createGroup} className="flex flex-wrap items-end gap-2">
             <input type="hidden" name="menuItemId" value={item.id} />

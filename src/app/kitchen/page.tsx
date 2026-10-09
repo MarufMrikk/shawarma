@@ -42,16 +42,16 @@ export default async function KitchenPage() {
     <>
       <AutoRefresh intervalMs={5000} />
       <div className="mb-4 flex items-baseline justify-between">
-        <h1 className="text-xl font-bold">{venue.name}</h1>
-        <span className="text-sm text-neutral-500">Обновляется автоматически</span>
+        <h1 className="sign text-[44px] text-kiosk">{venue.name}</h1>
+        <span className="text-sm text-white/60">Новые заказы появляются сами</span>
       </div>
       <div className="grid gap-4 md:grid-cols-3">
         {COLUMNS.map((col) => {
           const orders = active.filter((o) => col.statuses.includes(o.status));
           return (
-            <section key={col.title} className="rounded-xl bg-neutral-100 p-3">
-              <h2 className="mb-3 font-semibold">
-                {col.title} <span className="text-neutral-500">{orders.length}</span>
+            <section key={col.title} className="rounded-xl bg-board-2 p-3">
+              <h2 className="sign mb-3 flex items-baseline justify-between text-[30px]">
+                {col.title} <span className="text-kiosk">{orders.length}</span>
               </h2>
               <div className="space-y-3">
                 {orders.map((o) => {
@@ -59,20 +59,20 @@ export default async function KitchenPage() {
                   return (
                     <article
                       key={o.id}
-                      className={`rounded-lg bg-white p-3 shadow-sm ${o.status === "new" ? "ring-2 ring-orange-400" : ""}`}
+                      className={`rounded-lg bg-white p-4 text-board ${o.status === "new" ? "outline-4 outline-kiosk" : ""}`}
                     >
                       <div className="flex items-baseline justify-between">
-                        <span className="text-2xl font-bold tracking-widest">{o.pickupCode}</span>
-                        <span className="text-xs text-neutral-500">{STATUS_LABELS[o.status]}</span>
+                        <span className="sign text-[56px] tracking-[0.04em]">{o.pickupCode}</span>
+                        <span className="rounded-md bg-page px-2 py-0.5 text-xs font-semibold">{STATUS_LABELS[o.status]}</span>
                       </div>
                       <div className="text-sm">
                         {o.customerName} · <a href={`tel:${o.customerPhone}`}>{o.customerPhone}</a>
                       </div>
-                      <div className={`text-sm ${minutesLeft < 0 ? "text-red-600" : "text-neutral-600"}`}>
+                      <div className={`text-sm ${minutesLeft < 0 ? "font-semibold text-chili" : "text-muted"}`}>
                         Придёт к {time.format(o.pickupAt)}
                         {minutesLeft >= 0 ? ` (через ${minutesLeft} мин)` : ` (опаздывает на ${-minutesLeft} мин)`}
                       </div>
-                      <ul className="mt-2 space-y-1 text-sm">
+                      <ul className="mt-3 space-y-1.5 border-t border-dashed border-line pt-3 text-[15px]">
                         {o.items.map((i) => {
                           const mods = i.modifiers as ModifierSnapshot[];
                           return (
@@ -81,18 +81,18 @@ export default async function KitchenPage() {
                                 {i.quantity} × {i.name}
                               </span>
                               {mods.length > 0 && (
-                                <span className="text-neutral-600"> — {mods.map((m) => m.name).join(", ")}</span>
+                                <span className="text-muted">: {mods.map((m) => m.name).join(", ")}</span>
                               )}
                             </li>
                           );
                         })}
                       </ul>
-                      <div className="mt-1 text-sm text-neutral-500">{formatMoney(o.totalAmount, o.currency)}</div>
+                      <div className="mt-2 text-sm font-semibold">{formatMoney(o.totalAmount, o.currency)}</div>
                       <OrderActions orderId={o.id} status={o.status} code={o.pickupCode} />
                     </article>
                   );
                 })}
-                {orders.length === 0 && <p className="text-sm text-neutral-500">Пусто</p>}
+                {orders.length === 0 && <p className="px-1 text-sm text-white/50">Пока пусто</p>}
               </div>
             </section>
           );
@@ -102,7 +102,7 @@ export default async function KitchenPage() {
       {recent.length > 0 && (
         <section className="mt-8">
           <h2 className="mb-2 font-semibold">Последние завершённые</h2>
-          <ul className="text-sm text-neutral-600">
+          <ul className="text-sm text-white/60">
             {recent.map((o) => (
               <li key={o.id}>
                 {time.format(o.updatedAt)} · {o.pickupCode} · {o.customerName} · {STATUS_LABELS[o.status]}

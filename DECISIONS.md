@@ -31,5 +31,5 @@
 - Owners can invite and remove STAFF accounts; admins can invite OWNER or STAFF.
 - Supported countries list (CIS) lives in `src/lib/countries.ts` with default currency/timezone.
 - Launch scope narrowed to Russia/Moscow (user request): `COUNTRIES` = RU only, seeds = 5 Moscow venues; multi-country schema kept.
-- UI: Unbounded (display) + Golos Text (body) via next/font; aubergine/chili/turmeric palette; menu as a dark "menu board", cart/order as a receipt.
-- Map: plain OSM tiles muted with a CSS filter (CARTO basemaps now need an API key); HTML pill pins; list ↔ map selection sync.
+- UI (v2): street-kiosk lightbox look — Alumni Sans (signage) + Onest (text), kiosk yellow / ketchup red / charcoal; line pictograms per menu category; dark high-contrast kitchen screen.
+- Map: plain OSM tiles muted with a CSS filter (CARTO basemaps now need an API key); HTML price-tag pins ("от N ₽" = cheapest item of the first menu category); list ↔ map selection sync.

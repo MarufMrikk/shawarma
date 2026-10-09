@@ -23,22 +23,22 @@ export default async function VenuePage({ params }: PageProps<"/v/[slug]">) {
   return (
     <>
       <SiteHeader />
-      <section className="bg-board text-white">
-        <div className="mx-auto max-w-6xl px-4 pb-8 pt-5">
-          <Link href="/" className="text-sm text-white/60 hover:text-white">
-            ← Все шавермные на карте
+      <section className="border-b-2 border-board bg-kiosk text-board">
+        <div className="mx-auto max-w-6xl px-4 pb-7 pt-4">
+          <Link href="/" className="text-sm font-semibold underline-offset-4 hover:underline">
+            Все шавермные на карте
           </Link>
-          <h1 className="mt-4 font-display text-3xl font-extrabold leading-[1.1] sm:text-4xl">{venue.name}</h1>
-          <p className="mt-2 text-white/75">{venue.address}</p>
-          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+          <h1 className="sign mt-5 text-[64px] sm:text-[88px]">{venue.name}</h1>
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[15px]">
+            <span className="font-medium">{venue.address}</span>
             {openUntil ? (
-              <span className="rounded-full bg-herb px-3 py-1 font-semibold">Открыто {openUntil}</span>
+              <span className="rounded-md bg-board px-2.5 py-1 text-sm font-semibold text-kiosk">Открыто {openUntil}</span>
             ) : (
-              <span className="rounded-full bg-white/15 px-3 py-1 font-semibold">
+              <span className="rounded-md bg-chili px-2.5 py-1 text-sm font-semibold text-white">
                 Сейчас закрыто, сегодня {todayHoursLabel(venue.hours, venue.timezone)}
               </span>
             )}
-            <a href={`tel:${venue.phone}`} className="text-white/75 hover:text-white">
+            <a href={`tel:${venue.phone}`} className="font-medium underline-offset-4 hover:underline">
               {venue.phone}
             </a>
           </div>

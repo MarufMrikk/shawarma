@@ -16,8 +16,8 @@ export default async function HoursPage() {
 
   return (
     <section className="max-w-lg">
-      <h1 className="mb-1 text-xl font-bold">Часы работы</h1>
-      <p className="mb-4 text-sm text-neutral-500">
+      <h1 className="sign mb-1 text-[44px]">Часы работы</h1>
+      <p className="mb-4 text-sm text-muted">
         Время местное ({venue.timezone}). Если закрытие раньше открытия — работаете после полуночи; 00:00–00:00 —
         круглосуточно.
       </p>

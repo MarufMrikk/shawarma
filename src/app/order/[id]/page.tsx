@@ -42,14 +42,14 @@ export default async function OrderPage({ params }: PageProps<"/order/[id]">) {
       <SiteHeader />
       <AutoRefresh intervalMs={8000} enabled={!terminal} />
       <main className="mx-auto w-full max-w-md px-4 py-8">
-        <div className="receipt rounded-t-3xl px-6 pt-6 shadow-[0_10px_30px_rgba(42,31,61,.08)]">
+        <div className="receipt rounded-t-lg border-x-2 border-t-2 border-board px-6 pt-6">
           <div className="text-center">
             <p className="text-sm text-muted">Код для получения</p>
-            <div className="mx-auto mt-2 inline-block rounded-2xl bg-turmeric px-6 py-3 font-display text-6xl font-extrabold tracking-[0.12em] text-board">
+            <div className="sign mx-auto mt-2 inline-block rounded-lg border-2 border-board bg-kiosk px-7 pb-2 pt-4 text-[112px] tracking-[0.06em] text-board shadow-[5px_5px_0_#26211c]">
               {order.pickupCode}
             </div>
             <p
-              className={`mt-5 font-display text-xl font-bold ${
+              className={`sign mt-6 text-[40px] ${
                 order.status === "cancelled" ? "text-chili" : order.status === "ready" ? "text-herb" : "text-board"
               }`}
             >
@@ -98,7 +98,7 @@ export default async function OrderPage({ params }: PageProps<"/order/[id]">) {
           </ul>
           <div className="flex items-baseline justify-between border-t-2 border-dashed border-line pt-3">
             <span className="font-semibold">Итого</span>
-            <span className="font-display text-xl font-bold">{formatMoney(order.totalAmount, order.currency)}</span>
+            <span className="sign text-[34px]">{formatMoney(order.totalAmount, order.currency)}</span>
           </div>
           <p className="mt-2 text-xs text-muted">Оплата в шавермной при получении.</p>
         </div>

@@ -1,17 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --color-board: #2a1f3d;
-  --color-board-2: #3a2d52;
-  --color-chili: #d7261e;
-  --color-chili-dark: #b01d16;
-  --color-turmeric: #f6b40e;
-  --color-herb: #2e7d4f;
-  --color-page: #f4f3f7;
-  --color-ink: #1d1729;
-  --color-muted: #6b6478;
-  --color-line: #e2dfe8;
-  --font-display: var(--nf-display), system-ui, sans-serif;
+  /* Street kiosk lightbox: yellow sign, ketchup prices, charcoal lettering. */
+  --color-kiosk: #ffd21a;
+  --color-kiosk-deep: #f2bd00;
+  --color-chili: #e3261c;
+  --color-chili-dark: #bf1c14;
+  --color-board: #26211c;
+  --color-board-2: #37312a;
+  --color-turmeric: #ffd21a;
+  --color-herb: #1e8449;
+  --color-page: #fafaf7;
+  --color-paper: #fffdf6;
+  --color-ink: #26211c;
+  --color-muted: #75706a;
+  --color-line: #e9e5dc;
+  --font-display: var(--nf-display), "Arial Narrow", sans-serif;
   --font-sans: var(--nf-text), system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
@@ -22,7 +26,7 @@ body {
 }
 
 :focus-visible {
-  outline: 3px solid var(--color-turmeric);
+  outline: 3px solid var(--color-chili);
   outline-offset: 2px;
 }
 
@@ -37,27 +41,28 @@ body {
 
 @layer components {
   .input {
-    @apply w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-ink outline-none placeholder:text-muted/70 focus:border-board;
+    @apply w-full rounded-lg border-2 border-line bg-white px-3.5 py-2.5 text-ink outline-none placeholder:text-muted/70 focus:border-board;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-chili px-4 py-2.5 font-semibold text-white transition-colors hover:bg-chili-dark disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-chili px-4 py-2.5 font-semibold text-white transition-colors hover:bg-chili-dark disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 py-2.5 font-medium text-ink transition-colors hover:border-board disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border-2 border-board/15 bg-white px-4 py-2 font-semibold text-ink transition-colors hover:border-board disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  /* Tall condensed signage lettering. */
+  .sign {
+    @apply font-display leading-[0.9] font-extrabold tracking-[-0.01em];
+  }
+  .price {
+    @apply font-display text-chili font-extrabold leading-none;
   }
 
   /* Receipt paper with a torn (zigzag) bottom edge — cart and order ticket. */
   .receipt {
-    @apply relative bg-white;
-    --tooth: 10px;
-    mask:
-      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--tooth)) 100%;
+    @apply relative bg-paper;
+    --tooth: 9px;
+    mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--tooth)) 100%;
     padding-bottom: calc(var(--tooth) + 1rem);
-  }
-
-  /* Menu board leader dots between item name and price. */
-  .leader {
-    @apply mx-2 min-w-6 flex-1 translate-y-[-0.3em] border-b-2 border-dotted border-white/25;
   }
 }
 
@@ -69,10 +74,10 @@ body {
 .leaflet-container {
   font-family: var(--font-sans);
 }
-/* Mute the OSM basemap so the venue pins carry the color. */
+/* Mute the OSM basemap so the yellow pins carry the color. */
 .leaflet-tile-pane {
-  filter: grayscale(1) contrast(0.88) brightness(1.06);
+  filter: grayscale(1) contrast(0.85) brightness(1.07);
 }
-.leaflet-popup-content-wrapper {
-  border-radius: 14px;
+.leaflet-bar a {
+  color: var(--color-ink);
 }

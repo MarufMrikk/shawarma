@@ -10,7 +10,7 @@ import type { MapView, Point } from "./VenueMap";
 
 const VenueMap = dynamic(() => import("./VenueMap"), {
   ssr: false,
-  loading: () => <div className="absolute inset-0 animate-pulse bg-[#e8e6ee]" />,
+  loading: () => <div className="absolute inset-0 animate-pulse bg-[#ecebe7]" />,
 });
 
 type GeoState = "idle" | "locating" | "denied";
@@ -106,10 +106,10 @@ export function VenueFinder({ venues }: { venues: VenueCard[] }) {
         <VenueMap venues={venues} selected={selected} onSelect={selectFromMap} user={user} view={view} />
       </div>
 
-      <aside className="relative z-10 -mt-5 flex flex-col rounded-t-3xl bg-white md:mt-0 md:w-[400px] md:rounded-none md:border-l md:border-line">
-        <div className="border-b border-line px-5 pb-4 pt-5">
-          <h1 className="font-display text-xl font-bold leading-tight">Шаверма рядом с вами</h1>
-          <p className="mt-1 text-sm text-muted">Закажите заранее и заберите без очереди.</p>
+      <aside className="relative z-10 -mt-4 flex flex-col rounded-t-2xl border-t-2 border-board bg-white md:mt-0 md:w-[420px] md:rounded-none md:border-l-2 md:border-t-0">
+        <div className="border-b-2 border-board px-5 pb-4 pt-5">
+          <h1 className="sign text-[44px]">Шаверма рядом</h1>
+          <p className="mt-2 text-[15px] text-muted">Закажите заранее — к вашему приходу всё будет готово.</p>
 
           <form onSubmit={search} className="mt-4 flex gap-2">
             <label className="sr-only" htmlFor="address">
@@ -131,7 +131,7 @@ export function VenueFinder({ venues }: { venues: VenueCard[] }) {
             type="button"
             onClick={locate}
             disabled={geo === "locating"}
-            className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-board hover:text-chili disabled:opacity-60"
+            className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-board underline-offset-4 hover:underline disabled:opacity-60"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
               <circle cx="12" cy="12" r="3.5" />
@@ -162,24 +162,27 @@ export function VenueFinder({ venues }: { venues: VenueCard[] }) {
                       if (el) rowRefs.current.set(v.slug, el);
                       else rowRefs.current.delete(v.slug);
                     }}
-                    className={`border-b border-l-4 border-b-line transition-colors ${
-                      isSelected ? "border-l-chili bg-page" : "border-l-transparent"
-                    }`}
+                    className={`border-b border-line transition-colors ${isSelected ? "bg-kiosk/35" : ""}`}
                   >
-                    <div className="flex items-start gap-3 px-5 py-4">
+                    <div className="flex items-center gap-4 px-5 py-4">
                       <button type="button" onClick={() => selectFromList(v)} className="min-w-0 flex-1 text-left">
-                        <div className="font-semibold">{v.name}</div>
+                        <div className="text-[17px] font-bold leading-snug">{v.name}</div>
                         <div className="truncate text-sm text-muted">{v.address}</div>
                         <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-sm">
-                          {v.distance !== null && <span className="font-medium">{formatDistance(v.distance)}</span>}
-                          <span className="text-herb">Открыто {v.hoursLabel}</span>
-                          {v.minPrice !== null && (
-                            <span className="text-muted">от {formatMoney(v.minPrice, v.currency)}</span>
-                          )}
+                          {v.distance !== null && <span className="font-semibold">{formatDistance(v.distance)}</span>}
+                          <span className="font-medium text-herb">Открыто {v.hoursLabel}</span>
                         </div>
                       </button>
-                      <Link href={`/v/${v.slug}`} className="btn-primary shrink-0 px-3.5 py-2 text-sm">
-                        Меню
+                      <Link href={`/v/${v.slug}`} className="group shrink-0 text-right">
+                        {v.minPrice !== null && (
+                          <span className="block text-xs text-muted">шаверма от</span>
+                        )}
+                        {v.minPrice !== null && (
+                          <span className="price block text-[30px]">{formatMoney(v.minPrice, v.currency)}</span>
+                        )}
+                        <span className="mt-1 inline-block text-sm font-semibold underline-offset-4 group-hover:underline">
+                          Открыть меню
+                        </span>
                       </Link>
                     </div>
                   </li>

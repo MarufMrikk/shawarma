@@ -14,12 +14,12 @@ export default async function InvitePage({ params }: PageProps<"/invite/[token]"
 
   return (
     <main className="mx-auto w-full max-w-sm px-4 py-16">
-      <h1 className="mb-2 text-2xl font-bold">Приглашение</h1>
+      <h1 className="sign mb-3 text-[44px]">Приглашение</h1>
       {!valid ? (
-        <p className="text-neutral-600">Ссылка недействительна или истекла. Попросите прислать новую.</p>
+        <p className="text-muted">Ссылка недействительна или истекла. Попросите прислать новую.</p>
       ) : (
         <>
-          <p className="mb-6 text-neutral-600">
+          <p className="mb-6 text-muted">
             {user.venue ? `«${user.venue.name}». ` : ""}Задайте пароль для входа под {user.email}.
           </p>
           <ActionForm action={acceptInvite} className="space-y-3">

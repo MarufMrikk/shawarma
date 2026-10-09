@@ -57,7 +57,7 @@ export default async function AdminSummaryPage({ searchParams }: PageProps<"/adm
   return (
     <div className="space-y-8">
       <section>
-        <h1 className="mb-4 text-xl font-bold">Сводка</h1>
+        <h1 className="sign mb-4 text-[44px]">Сводка</h1>
         <form className="flex flex-wrap items-end gap-3 text-sm">
           <label>
             С
@@ -80,12 +80,12 @@ export default async function AdminSummaryPage({ searchParams }: PageProps<"/adm
           </label>
           <button className="btn-secondary">Показать</button>
         </form>
-        <p className="mt-2 text-xs text-neutral-500">Даты — по UTC.</p>
+        <p className="mt-2 text-xs text-muted">Даты — по UTC.</p>
       </section>
 
       <section className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="text-neutral-500">
+          <thead className="text-muted">
             <tr>
               <th className="py-2 pr-4">Заведение</th>
               <th className="py-2 pr-4">Страна</th>
@@ -96,13 +96,13 @@ export default async function AdminSummaryPage({ searchParams }: PageProps<"/adm
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className="border-t border-neutral-200">
+              <tr key={r.id} className="border-t border-line">
                 <td className="py-2 pr-4">
-                  <Link href={`/admin/venues/${r.id}`} className="hover:text-orange-600">
+                  <Link href={`/admin/venues/${r.id}`} className="hover:text-chili">
                     {r.name}
                   </Link>
-                  <span className="text-neutral-500"> · {r.city}</span>
-                  {!r.approved && <span className="ml-2 text-xs text-red-600">не одобрено</span>}
+                  <span className="text-muted"> · {r.city}</span>
+                  {!r.approved && <span className="ml-2 text-xs text-chili">не одобрено</span>}
                 </td>
                 <td className="py-2 pr-4">{countryName(r.country)}</td>
                 <td className="py-2 pr-4 text-right font-medium">{r.total}</td>
@@ -110,7 +110,7 @@ export default async function AdminSummaryPage({ searchParams }: PageProps<"/adm
                 <td className="py-2 text-right">{r.cancelled}</td>
               </tr>
             ))}
-            <tr className="border-t-2 border-neutral-300 font-semibold">
+            <tr className="border-t-2 border-line font-semibold">
               <td className="py-2 pr-4">Итого</td>
               <td />
               <td className="py-2 pr-4 text-right">{totals.total}</td>
@@ -128,7 +128,7 @@ export default async function AdminSummaryPage({ searchParams }: PageProps<"/adm
             <Link
               key={s}
               href="/admin/leads"
-              className="rounded-lg border border-neutral-200 bg-white px-3 py-2 hover:border-orange-400"
+              className="rounded-lg border border-line bg-white px-3 py-2 hover:border-board"
             >
               {LEAD_STATUS_LABELS[s]}: <b>{leadsBy.get(s) ?? 0}</b>
             </Link>

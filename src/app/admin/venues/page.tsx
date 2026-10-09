@@ -19,7 +19,7 @@ export default async function AdminVenuesPage({ searchParams }: PageProps<"/admi
   return (
     <section>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-        <h1 className="text-xl font-bold">Заведения</h1>
+        <h1 className="sign text-[44px]">Заведения</h1>
         <form className="flex items-end gap-2 text-sm">
           <select name="country" defaultValue={country} className="input">
             <option value="">Все страны</option>
@@ -34,7 +34,7 @@ export default async function AdminVenuesPage({ searchParams }: PageProps<"/admi
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="text-neutral-500">
+          <thead className="text-muted">
             <tr>
               <th className="py-2 pr-4">Заведение</th>
               <th className="py-2 pr-4">Страна</th>
@@ -47,12 +47,12 @@ export default async function AdminVenuesPage({ searchParams }: PageProps<"/admi
           </thead>
           <tbody>
             {venues.map((v) => (
-              <tr key={v.id} className="border-t border-neutral-200">
+              <tr key={v.id} className="border-t border-line">
                 <td className="py-2 pr-4">
-                  <Link href={`/admin/venues/${v.id}`} className="font-medium hover:text-orange-600">
+                  <Link href={`/admin/venues/${v.id}`} className="font-medium hover:text-chili">
                     {v.name}
                   </Link>
-                  <div className="text-neutral-500">
+                  <div className="text-muted">
                     {v.city}, {v.address}
                   </div>
                 </td>
@@ -63,18 +63,18 @@ export default async function AdminVenuesPage({ searchParams }: PageProps<"/admi
                 <td className="py-2 pr-4">{v._count.orders}</td>
                 <td className="py-2">
                   {v.approved ? (
-                    <span className="text-green-700">одобрено</span>
+                    <span className="text-herb">одобрено</span>
                   ) : (
-                    <span className="text-red-600">не одобрено</span>
+                    <span className="text-chili">не одобрено</span>
                   )}
-                  {v._count.items === 0 && <div className="text-xs text-neutral-500">нет меню</div>}
-                  {v._count.hours === 0 && <div className="text-xs text-neutral-500">нет часов</div>}
+                  {v._count.items === 0 && <div className="text-xs text-muted">нет меню</div>}
+                  {v._count.hours === 0 && <div className="text-xs text-muted">нет часов</div>}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {venues.length === 0 && <p className="text-neutral-500">Нет заведений.</p>}
+        {venues.length === 0 && <p className="text-muted">Нет заведений.</p>}
       </div>
     </section>
   );

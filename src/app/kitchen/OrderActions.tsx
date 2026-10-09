@@ -37,14 +37,14 @@ export function OrderActions({ orderId, status, code }: { orderId: string; statu
           {NEXT_ACTION_LABELS[next]}
         </button>
         <button
-          className="btn-secondary text-red-600"
+          className="btn-secondary text-chili"
           disabled={pending}
           onClick={() => window.confirm("Отменить заказ?") && run("cancelled")}
         >
           Отменить
         </button>
       </div>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-chili">{error}</p>}
     </div>
   );
 }

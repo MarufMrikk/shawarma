@@ -8,7 +8,9 @@ export default async function KitchenLayout({ children }: LayoutProps<"/kitchen"
   return (
     <>
       <StaffHeader title="Кухня" userName={user.name ?? ""} links={links} />
-      <main className="mx-auto w-full max-w-6xl px-4 py-6">{children}</main>
+      <main className="flex-1 bg-board text-white">
+        <div className="mx-auto w-full max-w-7xl px-4 py-6">{children}</div>
+      </main>
     </>
   );
 }

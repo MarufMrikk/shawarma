@@ -27,36 +27,36 @@ export default async function AdminVenuePage({ params }: PageProps<"/admin/venue
 
   return (
     <div className="space-y-8">
-      <Link href="/admin/venues" className="text-sm text-neutral-600 hover:text-orange-600">
+      <Link href="/admin/venues" className="text-sm text-muted hover:text-chili">
         ← Заведения
       </Link>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-xl border border-neutral-200 bg-white p-4">
-          <h1 className="text-xl font-bold">{venue.name}</h1>
-          <p className="text-sm text-neutral-600">
+        <section className="rounded-xl border border-line bg-white p-4">
+          <h1 className="sign text-[44px]">{venue.name}</h1>
+          <p className="text-sm text-muted">
             {countryName(venue.country)}, {venue.city}, {venue.address} · {venue.phone}
           </p>
           <p className="mt-1 text-sm">
             Сейчас на карте:{" "}
-            {visible ? <span className="text-green-700">да</span> : <span className="text-red-600">нет</span>} · позиций
+            {visible ? <span className="text-herb">да</span> : <span className="text-chili">нет</span>} · позиций
             в меню: {venue._count.items} · заказов: {venue._count.orders}
           </p>
           <div className="mt-1 flex gap-4 text-sm">
-            <Link href={`/v/${venue.slug}`} className="text-orange-600 underline">
+            <Link href={`/v/${venue.slug}`} className="text-chili underline">
               /v/{venue.slug}
             </Link>
             {venue.lead && (
-              <Link href={`/admin/leads/${venue.lead.id}`} className="text-orange-600 underline">
+              <Link href={`/admin/leads/${venue.lead.id}`} className="text-chili underline">
                 Заявка
               </Link>
             )}
-            <Link href={`/admin/orders?venue=${venue.id}`} className="text-orange-600 underline">
+            <Link href={`/admin/orders?venue=${venue.id}`} className="text-chili underline">
               Заказы
             </Link>
           </div>
 
-          <ActionForm action={updateVenueAdmin} className="mt-4 space-y-3 border-t border-neutral-100 pt-4 text-sm">
+          <ActionForm action={updateVenueAdmin} className="mt-4 space-y-3 border-t border-line pt-4 text-sm">
             <input type="hidden" name="id" value={venue.id} />
             <label className="flex items-center gap-2">
               <input type="checkbox" name="approved" defaultChecked={venue.approved} />

@@ -10,7 +10,7 @@ export type VenueCard = {
   lng: number | null;
   hoursLabel: string;
   currency: string;
-  /** cheapest available item, minor units */
+  /** cheapest available item of the first menu category (the venue's main dish), minor units */
   minPrice: number | null;
 };
 
@@ -18,7 +18,15 @@ export type VenueCard = {
 export async function getVisibleVenues(now: Date = new Date()): Promise<VenueCard[]> {
   const venues = await db.venue.findMany({
     where: { approved: true, items: { some: { available: true } } },
-    include: { hours: true, items: { where: { available: true }, select: { price: true } } },
+    include: {
+      hours: true,
+      categories: {
+        where: { items: { some: { available: true } } },
+        orderBy: { sortOrder: "asc" },
+        take: 1,
+        include: { items: { where: { available: true }, select: { price: true } } },
+      },
+    },
     orderBy: { name: "asc" },
   });
   return venues
@@ -32,6 +40,6 @@ export async function getVisibleVenues(now: Date = new Date()): Promise<VenueCar
       lng: v.lng,
       hoursLabel: openUntilLabel(v.hours, v.timezone, now) ?? "",
       currency: v.currency,
-      minPrice: v.items.length ? Math.min(...v.items.map((i) => i.price)) : null,
+      minPrice: v.categories[0]?.items.length ? Math.min(...v.categories[0].items.map((i) => i.price)) : null,
     }));
 }

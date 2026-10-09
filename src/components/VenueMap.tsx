@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useMemo } from "react";
 import { MapContainer, Marker, TileLayer, useMap, ZoomControl } from "react-leaflet";
+import { formatMoney } from "@/lib/money";
 import type { VenueCard } from "@/lib/venues";
 
 export type Point = { lat: number; lng: number };
@@ -15,16 +16,20 @@ function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
-function venueIcon(name: string, selected: boolean) {
-  const tone = selected ? "bg-board text-turmeric scale-110" : "bg-chili text-white";
-  const tip = selected ? "border-t-board" : "border-t-chili";
+function venueIcon(name: string, price: string | null, selected: boolean) {
+  const tone = selected ? "bg-chili text-white border-board" : "bg-kiosk text-board border-board";
+  const priceTone = selected ? "text-white/85" : "text-chili";
   return L.divIcon({
     className: "pin-icon",
     iconSize: [0, 0],
     iconAnchor: [0, 0],
-    html: `<div class="absolute bottom-0 left-0 flex -translate-x-1/2 flex-col items-center">
-      <div class="${tone} origin-bottom whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-semibold shadow-[0_4px_14px_rgba(42,31,61,.35)] transition-transform">${escapeHtml(name)}</div>
-      <div class="h-0 w-0 border-x-[7px] border-t-[8px] border-x-transparent ${tip}"></div>
+    html: `<div class="absolute bottom-0 left-0 flex -translate-x-1/2 flex-col items-center ${selected ? "z-10" : ""}">
+      <div class="${tone} rounded-md border-2 px-2.5 pb-1 pt-1.5 text-center leading-none shadow-[3px_3px_0_#26211c]">
+        <div class="whitespace-nowrap text-[13px] font-bold">${escapeHtml(name)}</div>
+        ${price ? `<div class="mt-0.5 font-display text-[17px] font-extrabold ${priceTone}">от ${escapeHtml(price)}</div>` : ""}
+      </div>
+      <div class="h-3 w-0.5 bg-board"></div>
+      <div class="h-2 w-2 rounded-full border-2 border-board bg-white"></div>
     </div>`,
   });
 }
@@ -66,7 +71,13 @@ export default function VenueMap({
   view: MapView;
 }) {
   const icons = useMemo(
-    () => new Map(venues.map((v) => [v.slug, { normal: venueIcon(v.name, false), active: venueIcon(v.name, true) }])),
+    () =>
+      new Map(
+        venues.map((v) => {
+          const price = v.minPrice !== null ? formatMoney(v.minPrice, v.currency) : null;
+          return [v.slug, { normal: venueIcon(v.name, price, false), active: venueIcon(v.name, price, true) }];
+        }),
+      ),
     [venues],
   );
 
@@ -75,7 +86,7 @@ export default function VenueMap({
       center={[55.7558, 37.6173]}
       zoom={12}
       zoomControl={false}
-      className="absolute inset-0 z-0 bg-[#e8e6ee]"
+      className="absolute inset-0 z-0 bg-[#ecebe7]"
       scrollWheelZoom
     >
       <TileLayer

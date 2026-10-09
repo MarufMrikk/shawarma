@@ -17,7 +17,7 @@ export function LoginForm() {
         className="input"
         autoComplete="current-password"
       />
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-chili">{error}</p>}
       <button disabled={pending} className="btn-primary">
         {pending ? "Входим…" : "Войти"}
       </button>

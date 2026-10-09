@@ -45,7 +45,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
 
   return (
     <section>
-      <h1 className="mb-4 text-xl font-bold">Заказы</h1>
+      <h1 className="sign mb-4 text-[44px]">Заказы</h1>
       <form className="mb-4 flex flex-wrap items-end gap-2 text-sm">
         <select name="country" defaultValue={country} className="input w-auto">
           <option value="">Все страны</option>
@@ -76,7 +76,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
 
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="text-neutral-500">
+          <thead className="text-muted">
             <tr>
               <th className="py-2 pr-4">Создан (UTC)</th>
               <th className="py-2 pr-4">Заведение</th>
@@ -88,30 +88,30 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
           </thead>
           <tbody>
             {orders.slice(0, PAGE_SIZE).map((o) => (
-              <tr key={o.id} className="border-t border-neutral-200">
+              <tr key={o.id} className="border-t border-line">
                 <td className="py-2 pr-4 whitespace-nowrap">
-                  <Link href={`/order/${o.id}`} className="hover:text-orange-600">
+                  <Link href={`/order/${o.id}`} className="hover:text-chili">
                     {fmt.format(o.createdAt)}
                   </Link>
                 </td>
                 <td className="py-2 pr-4">
-                  {o.venue.name} <span className="text-neutral-500">({o.venue.country})</span>
+                  {o.venue.name} <span className="text-muted">({o.venue.country})</span>
                 </td>
                 <td className="py-2 pr-4">
-                  {o.customerName} <span className="text-neutral-500">{o.customerPhone}</span>
+                  {o.customerName} <span className="text-muted">{o.customerPhone}</span>
                 </td>
                 <td className="py-2 pr-4 whitespace-nowrap">{formatMoney(o.totalAmount, o.currency)}</td>
                 <td className="py-2 pr-4">{STATUS_LABELS[o.status]}</td>
-                <td className="py-2 text-neutral-500">{o.paymentStatus}</td>
+                <td className="py-2 text-muted">{o.paymentStatus}</td>
               </tr>
             ))}
           </tbody>
         </table>
-        {orders.length === 0 && <p className="text-neutral-500">Заказов нет.</p>}
+        {orders.length === 0 && <p className="text-muted">Заказов нет.</p>}
       </div>
       <div className="mt-4 flex gap-4 text-sm">
         {page > 1 && <Link href={qs(page - 1)}>← Назад</Link>}
-        {hasNext && <Link href={qs(page + 1)}>Дальше →</Link>}
+        {hasNext && <Link href={qs(page + 1)}>Дальше</Link>}
       </div>
     </section>
   );

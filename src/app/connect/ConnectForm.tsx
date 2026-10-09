@@ -28,7 +28,7 @@ export function ConnectForm({ countries }: { countries: CountryInfo[] }) {
       <input name="phone" type="tel" placeholder="Телефон" className="input" required />
       <input name="email" type="email" placeholder="Email (необязательно)" className="input" />
       <input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state.error && <p className="text-sm text-chili">{state.error}</p>}
       <button className="btn-primary w-full" disabled={pending}>
         {pending ? "Отправляем…" : "Отправить заявку"}
       </button>

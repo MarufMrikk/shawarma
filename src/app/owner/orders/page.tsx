@@ -26,10 +26,10 @@ export default async function OwnerOrdersPage({ searchParams }: PageProps<"/owne
 
   return (
     <section>
-      <h1 className="mb-4 text-xl font-bold">Заказы</h1>
+      <h1 className="sign mb-4 text-[44px]">Заказы</h1>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="text-neutral-500">
+          <thead className="text-muted">
             <tr>
               <th className="py-2 pr-4">Создан</th>
               <th className="py-2 pr-4">Код</th>
@@ -41,12 +41,12 @@ export default async function OwnerOrdersPage({ searchParams }: PageProps<"/owne
           </thead>
           <tbody>
             {orders.slice(0, PAGE_SIZE).map((o) => (
-              <tr key={o.id} className="border-t border-neutral-200 align-top">
+              <tr key={o.id} className="border-t border-line align-top">
                 <td className="py-2 pr-4 whitespace-nowrap">{fmt.format(o.createdAt)}</td>
                 <td className="py-2 pr-4 font-mono">{o.pickupCode}</td>
                 <td className="py-2 pr-4">
                   {o.customerName}
-                  <div className="text-neutral-500">{o.customerPhone}</div>
+                  <div className="text-muted">{o.customerPhone}</div>
                 </td>
                 <td className="py-2 pr-4">{o.items.map((i) => `${i.quantity}× ${i.name}`).join(", ")}</td>
                 <td className="py-2 pr-4 whitespace-nowrap">{formatMoney(o.totalAmount, o.currency)}</td>
@@ -55,11 +55,11 @@ export default async function OwnerOrdersPage({ searchParams }: PageProps<"/owne
             ))}
           </tbody>
         </table>
-        {orders.length === 0 && <p className="text-neutral-500">Заказов пока нет.</p>}
+        {orders.length === 0 && <p className="text-muted">Заказов пока нет.</p>}
       </div>
       <div className="mt-4 flex gap-4 text-sm">
         {page > 1 && <Link href={`/owner/orders?page=${page - 1}`}>← Назад</Link>}
-        {hasNext && <Link href={`/owner/orders?page=${page + 1}`}>Дальше →</Link>}
+        {hasNext && <Link href={`/owner/orders?page=${page + 1}`}>Дальше</Link>}
       </div>
     </section>
   );

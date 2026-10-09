@@ -26,7 +26,7 @@ export default async function OwnerPage() {
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <section>
-        <h1 className="mb-4 text-xl font-bold">Заведение</h1>
+        <h1 className="sign mb-4 text-[44px]">Заведение</h1>
         <ActionForm action={updateVenueInfo} className="space-y-3">
           <label className="block text-sm">
             Название
@@ -46,7 +46,7 @@ export default async function OwnerPage() {
           </label>
           <SubmitButton>Сохранить</SubmitButton>
         </ActionForm>
-        <dl className="mt-6 grid grid-cols-2 gap-1 text-sm text-neutral-600">
+        <dl className="mt-6 grid grid-cols-2 gap-1 text-sm text-muted">
           <dt>Страна</dt>
           <dd>{venue.country}</dd>
           <dt>Валюта</dt>
@@ -63,7 +63,7 @@ export default async function OwnerPage() {
         <ul className="space-y-2 text-sm">
           {checks.map((c) => (
             <li key={c.label} className="flex items-center gap-2">
-              <span className={c.ok ? "text-green-600" : "text-red-600"}>{c.ok ? "✓" : "✗"}</span>
+              <span className={c.ok ? "text-herb" : "text-chili"}>{c.ok ? "✓" : "✗"}</span>
               {c.href && !c.ok ? (
                 <Link href={c.href} className="underline">
                   {c.label}
@@ -75,8 +75,8 @@ export default async function OwnerPage() {
           ))}
         </ul>
         {venue.approved && (
-          <Link href={`/v/${venue.slug}`} className="mt-4 inline-block text-sm text-orange-600 underline">
-            Страница заведения для клиентов →
+          <Link href={`/v/${venue.slug}`} className="mt-4 inline-block text-sm text-chili underline">
+            Страница заведения для клиентов
           </Link>
         )}
       </section>

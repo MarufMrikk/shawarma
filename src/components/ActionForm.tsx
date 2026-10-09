@@ -19,7 +19,7 @@ export function ActionForm({
   return (
     <form action={formAction} className={className}>
       {children}
-      {error && <p className="w-full text-sm text-red-600">{error}</p>}
+      {error && <p className="w-full text-sm text-chili">{error}</p>}
     </form>
   );
 }

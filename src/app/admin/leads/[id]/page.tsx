@@ -27,33 +27,33 @@ export default async function LeadPage({ params }: PageProps<"/admin/leads/[id]"
 
   return (
     <div className="space-y-6">
-      <Link href="/admin/leads" className="text-sm text-neutral-600 hover:text-orange-600">
+      <Link href="/admin/leads" className="text-sm text-muted hover:text-chili">
         ← Заявки
       </Link>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-xl border border-neutral-200 bg-white p-4">
-          <h1 className="text-xl font-bold">{lead.venueName}</h1>
+        <section className="rounded-xl border border-line bg-white p-4">
+          <h1 className="sign text-[44px]">{lead.venueName}</h1>
           <dl className="mt-3 grid grid-cols-[140px_1fr] gap-1 text-sm">
-            <dt className="text-neutral-500">Страна</dt>
+            <dt className="text-muted">Страна</dt>
             <dd>{countryName(lead.country)}</dd>
-            <dt className="text-neutral-500">Адрес</dt>
+            <dt className="text-muted">Адрес</dt>
             <dd>
               {lead.city}, {lead.address}
             </dd>
-            <dt className="text-neutral-500">Контакт</dt>
+            <dt className="text-muted">Контакт</dt>
             <dd>{lead.contactName}</dd>
-            <dt className="text-neutral-500">Телефон</dt>
+            <dt className="text-muted">Телефон</dt>
             <dd>
               <a href={`tel:${lead.phone}`}>{lead.phone}</a>
             </dd>
-            <dt className="text-neutral-500">Email</dt>
+            <dt className="text-muted">Email</dt>
             <dd>{lead.email ?? "—"}</dd>
-            <dt className="text-neutral-500">Создана</dt>
+            <dt className="text-muted">Создана</dt>
             <dd>{dateTimeFmt.format(lead.createdAt)}</dd>
           </dl>
 
-          <ActionForm action={updateLead} className="mt-4 flex flex-wrap items-end gap-2 border-t border-neutral-100 pt-4">
+          <ActionForm action={updateLead} className="mt-4 flex flex-wrap items-end gap-2 border-t border-line pt-4">
             <input type="hidden" name="id" value={lead.id} />
             <label className="text-sm">
               Статус
@@ -78,12 +78,12 @@ export default async function LeadPage({ params }: PageProps<"/admin/leads/[id]"
           </ActionForm>
         </section>
 
-        <section className="rounded-xl border border-neutral-200 bg-white p-4">
+        <section className="rounded-xl border border-line bg-white p-4">
           {lead.venue ? (
             <>
               <h2 className="font-semibold">Подключено</h2>
-              <Link href={`/admin/venues/${lead.venue.id}`} className="text-orange-600 underline">
-                {lead.venue.name} →
+              <Link href={`/admin/venues/${lead.venue.id}`} className="text-chili underline">
+                {lead.venue.name}
               </Link>
             </>
           ) : (
@@ -142,8 +142,8 @@ export default async function LeadPage({ params }: PageProps<"/admin/leads/[id]"
         </ActionForm>
         <ul className="space-y-2">
           {lead.notes.map((n) => (
-            <li key={n.id} className="rounded-lg border border-neutral-200 bg-white p-3 text-sm">
-              <div className="mb-1 text-xs text-neutral-500">
+            <li key={n.id} className="rounded-lg border border-line bg-white p-3 text-sm">
+              <div className="mb-1 text-xs text-muted">
                 {dateTimeFmt.format(n.createdAt)} · {n.author?.name ?? "—"}
               </div>
               <div className="whitespace-pre-wrap">{n.text}</div>

@@ -18,14 +18,14 @@ export default async function LeadsPage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-bold">Заявки</h1>
+      <h1 className="sign mb-4 text-[44px]">Заявки</h1>
       <div className="flex gap-3 overflow-x-auto pb-4">
         {LEAD_STATUSES.map((status) => {
           const column = leads.filter((l) => l.status === status);
           return (
-            <section key={status} className="w-64 shrink-0 rounded-xl bg-neutral-100 p-3">
+            <section key={status} className="w-64 shrink-0 rounded-xl bg-page p-3">
               <h2 className="mb-2 text-sm font-semibold">
-                {LEAD_STATUS_LABELS[status]} <span className="text-neutral-500">{column.length}</span>
+                {LEAD_STATUS_LABELS[status]} <span className="text-muted">{column.length}</span>
               </h2>
               <div className="space-y-2">
                 {column.map((l) => {
@@ -34,19 +34,19 @@ export default async function LeadsPage() {
                     <Link
                       key={l.id}
                       href={`/admin/leads/${l.id}`}
-                      className="block rounded-lg bg-white p-3 text-sm shadow-sm hover:ring-2 hover:ring-orange-300"
+                      className="block rounded-lg bg-white p-3 text-sm shadow-sm hover:ring-2 hover:ring-kiosk"
                     >
                       <div className="font-medium">{l.venueName}</div>
-                      <div className="text-neutral-600">
+                      <div className="text-muted">
                         {l.city}, {countryName(l.country)}
                       </div>
-                      <div className="text-neutral-500">{l.contactName}</div>
+                      <div className="text-muted">{l.contactName}</div>
                       {l.nextContactAt && (
-                        <div className={`mt-1 text-xs ${overdue ? "font-semibold text-red-600" : "text-neutral-500"}`}>
+                        <div className={`mt-1 text-xs ${overdue ? "font-semibold text-chili" : "text-muted"}`}>
                           Связаться: {dateFmt.format(l.nextContactAt)}
                         </div>
                       )}
-                      {l._count.notes > 0 && <div className="text-xs text-neutral-400">заметок: {l._count.notes}</div>}
+                      {l._count.notes > 0 && <div className="text-xs text-muted/70">заметок: {l._count.notes}</div>}
                     </Link>
                   );
                 })}
