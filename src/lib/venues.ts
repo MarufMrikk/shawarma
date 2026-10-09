@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
-import { isOpenAt, openUntilLabel } from "@/lib/hours";
+import { IS_DEMO } from "@/lib/demo";
+import { isOpenAt, openUntilLabel, todayHoursLabel } from "@/lib/hours";
 
 export type VenueCard = {
   slug: string;
@@ -30,7 +31,8 @@ export async function getVisibleVenues(now: Date = new Date()): Promise<VenueCar
     orderBy: { name: "asc" },
   });
   return venues
-    .filter((v) => isOpenAt(v.hours, v.timezone, now))
+    // The static demo is built once, so "open right now" would freeze at build time.
+    .filter((v) => IS_DEMO || isOpenAt(v.hours, v.timezone, now))
     .map((v) => ({
       slug: v.slug,
       name: v.name,
@@ -38,7 +40,7 @@ export async function getVisibleVenues(now: Date = new Date()): Promise<VenueCar
       address: v.address,
       lat: v.lat,
       lng: v.lng,
-      hoursLabel: openUntilLabel(v.hours, v.timezone, now) ?? "",
+      hoursLabel: IS_DEMO ? todayHoursLabel(v.hours, v.timezone, now) : (openUntilLabel(v.hours, v.timezone, now) ?? ""),
       currency: v.currency,
       minPrice: v.categories[0]?.items.length ? Math.min(...v.categories[0].items.map((i) => i.price)) : null,
     }));

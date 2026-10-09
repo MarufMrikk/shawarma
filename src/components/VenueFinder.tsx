@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { demoGeocode, IS_DEMO } from "@/lib/demo";
 import { distanceKm } from "@/lib/geo";
 import { formatMoney } from "@/lib/money";
 import type { VenueCard } from "@/lib/venues";
@@ -78,9 +79,15 @@ export function VenueFinder({ venues }: { venues: VenueCard[] }) {
     setSearching(true);
     setSearchError(null);
     try {
-      const res = await fetch(`/api/geocode?country=RU&q=${encodeURIComponent(`${CITY}, ${q}`)}`);
-      if (!res.ok) throw new Error();
-      showAround((await res.json()) as Point);
+      let point: Point | null;
+      if (IS_DEMO) {
+        point = await demoGeocode(`${CITY}, ${q}`);
+      } else {
+        const res = await fetch(`/api/geocode?country=RU&q=${encodeURIComponent(`${CITY}, ${q}`)}`);
+        point = res.ok ? ((await res.json()) as Point) : null;
+      }
+      if (!point) throw new Error();
+      showAround(point);
     } catch {
       setSearchError("Не нашли такой адрес в Москве. Попробуйте улицу с номером дома или станцию метро.");
     } finally {
@@ -170,7 +177,7 @@ export function VenueFinder({ venues }: { venues: VenueCard[] }) {
                         <div className="truncate text-sm text-muted">{v.address}</div>
                         <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-sm">
                           {v.distance !== null && <span className="font-semibold">{formatDistance(v.distance)}</span>}
-                          <span className="font-medium text-herb">Открыто {v.hoursLabel}</span>
+                          <span className="font-medium text-herb">{IS_DEMO ? `Сегодня ${v.hoursLabel}` : `Открыто ${v.hoursLabel}`}</span>
                         </div>
                       </button>
                       <Link href={`/v/${v.slug}`} className="group shrink-0 text-right">

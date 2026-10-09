@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
+import { IS_DEMO, saveDemoOrder } from "@/lib/demo";
 import type { MenuCategoryData } from "@/lib/menu";
 import { formatMoney } from "@/lib/money";
 import { ARRIVE_OPTIONS } from "@/lib/orderStatus";
@@ -39,11 +40,15 @@ const plural = (n: number, one: string, few: string, many: string) => {
 
 export function VenueMenu({
   slug,
+  venueName,
+  venueAddress,
   currency,
   menu,
   canOrder,
 }: {
   slug: string;
+  venueName: string;
+  venueAddress: string;
   currency: string;
   menu: MenuCategoryData[];
   canOrder: boolean;
@@ -114,6 +119,36 @@ export function VenueMenu({
     e.preventDefault();
     setError(null);
     writeStorage(CUSTOMER_KEY, { name, phone });
+    if (IS_DEMO) {
+      if (!name.trim() || phone.replace(/\D/g, "").length < 10) {
+        setError("Укажите имя и телефон");
+        return;
+      }
+      const id = Math.random().toString(36).slice(2, 10);
+      const now = Date.now();
+      saveDemoOrder({
+        id,
+        venueName,
+        venueSlug: slug,
+        venueAddress,
+        customerName: name.trim(),
+        pickupCode: String(Math.floor(Math.random() * 10_000)).padStart(4, "0"),
+        currency,
+        createdAt: now,
+        pickupAt: now + arriveIn * 60_000,
+        items: pricedCart.map(({ item, line, unitPrice, modifiers }) => ({
+          name: item.name,
+          quantity: line.quantity,
+          lineTotal: unitPrice * line.quantity,
+          modifiers,
+        })),
+        totalAmount: total,
+      });
+      setCart([]);
+      writeStorage(cartKey, []);
+      router.push(`/order?id=${id}`);
+      return;
+    }
     startTransition(async () => {
       const result = await placeOrder({
         slug,

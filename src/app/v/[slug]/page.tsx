@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { db } from "@/lib/db";
 import { openUntilLabel, todayHoursLabel } from "@/lib/hours";
+import { IS_DEMO } from "@/lib/demo";
 import { getVenueMenu } from "@/lib/menu";
 import { VenueMenu } from "./VenueMenu";
 
@@ -31,7 +32,11 @@ export default async function VenuePage({ params }: PageProps<"/v/[slug]">) {
           <h1 className="sign mt-5 text-[64px] sm:text-[88px]">{venue.name}</h1>
           <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[15px]">
             <span className="font-medium">{venue.address}</span>
-            {openUntil ? (
+            {IS_DEMO ? (
+              <span className="rounded-md bg-board px-2.5 py-1 text-sm font-semibold text-kiosk">
+                Сегодня {todayHoursLabel(venue.hours, venue.timezone)}
+              </span>
+            ) : openUntil ? (
               <span className="rounded-md bg-board px-2.5 py-1 text-sm font-semibold text-kiosk">Открыто {openUntil}</span>
             ) : (
               <span className="rounded-md bg-chili px-2.5 py-1 text-sm font-semibold text-white">
@@ -44,7 +49,14 @@ export default async function VenuePage({ params }: PageProps<"/v/[slug]">) {
           </div>
         </div>
       </section>
-      <VenueMenu slug={venue.slug} currency={venue.currency} menu={menu} canOrder={!!openUntil && menu.length > 0} />
+      <VenueMenu
+        slug={venue.slug}
+        venueName={venue.name}
+        venueAddress={venue.address}
+        currency={venue.currency}
+        menu={menu}
+        canOrder={(IS_DEMO || !!openUntil) && menu.length > 0}
+      />
     </>
   );
 }
