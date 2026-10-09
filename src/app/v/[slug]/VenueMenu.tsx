@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useId, useMemo, useState, useTransition } from "react";
 import { IS_DEMO, saveDemoOrder } from "@/lib/demo";
 import type { MenuCategoryData } from "@/lib/menu";
 import { formatMoney } from "@/lib/money";
@@ -355,6 +355,8 @@ function CartPanel({
   pending: boolean;
   onSubmit: (e: React.FormEvent) => void;
 }) {
+  // The panel renders twice (desktop sidebar + mobile sheet), so field ids must be unique.
+  const uid = useId();
   return (
     <div className="receipt rounded-t-lg border-x-2 border-t-2 border-board px-5 pt-5">
       <h2 className="sign text-[36px]">Ваш заказ</h2>
@@ -400,11 +402,11 @@ function CartPanel({
 
           <form onSubmit={onSubmit} className="mt-5 space-y-3">
             <div>
-              <label htmlFor="cart-name" className="mb-1 block text-sm font-medium">
+              <label htmlFor={`${uid}-name`} className="mb-1 block text-sm font-medium">
                 Имя
               </label>
               <input
-                id="cart-name"
+                id={`${uid}-name`}
                 className="input"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -414,11 +416,11 @@ function CartPanel({
               />
             </div>
             <div>
-              <label htmlFor="cart-phone" className="mb-1 block text-sm font-medium">
+              <label htmlFor={`${uid}-phone`} className="mb-1 block text-sm font-medium">
                 Телефон
               </label>
               <input
-                id="cart-phone"
+                id={`${uid}-phone`}
                 className="input"
                 placeholder="+7 900 000-00-00"
                 value={phone}

@@ -14,7 +14,16 @@ const rm = (p) => rmSync(p, { recursive: true, force: true });
 const edit = (p, fn) => writeFileSync(p, fn(readFileSync(p, "utf8")));
 
 // 1. Server-only surfaces are not part of the demo.
-for (const p of ["src/app/partner", "src/app/api", "src/proxy.ts", "src/app/order"]) rm(p);
+for (const p of [
+  "src/app/partner",
+  "src/app/api",
+  "src/proxy.ts",
+  "src/app/order",
+  "src/components/StaffHeader.tsx",
+  "src/components/StaffNav.tsx",
+]) {
+  rm(p);
+}
 
 // 2. Order ticket lives in the browser.
 mkdirSync("src/app/order", { recursive: true });
