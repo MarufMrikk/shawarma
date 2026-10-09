@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  OWNER
+  STAFF
+}
+
+enum OrderStatus {
+  new
+  accepted
+  cooking
+  ready
+  picked_up
+  cancelled
+}
+
+enum LeadStatus {
+  lead
+  contacted
+  negotiation
+  connected
+  rejected
+  paused
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String
+  passwordHash    String?
+  role            Role
+  venueId         String?
+  venue           Venue?    @relation(fields: [venueId], references: [id], onDelete: SetNull)
+  inviteToken     String?   @unique
+  inviteExpiresAt DateTime?
+  createdAt       DateTime  @default(now())
+  leadNotes       LeadNote[]
+
+  @@index([venueId])
+}
+
+model Venue {
+  id                String         @id @default(cuid())
+  slug              String         @unique
+  name              String
+  country           String         @db.Char(2)
+  currency          String         @db.Char(3)
+  timezone          String
+  city              String
+  address           String
+  lat               Float?
+  lng               Float?
+  phone             String
+  approved          Boolean        @default(false)
+  commissionPercent Decimal        @default(0) @db.Decimal(5, 2)
+  leadId            String?        @unique
+  lead              Lead?          @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  createdAt         DateTime       @default(now())
+  users             User[]
+  hours             OpeningHours[]
+  categories        MenuCategory[]
+  items             MenuItem[]
+  orders            Order[]
+
+  @@index([country])
+}
+
+/// weekday: 0 = Monday ... 6 = Sunday; minutes from local midnight in venue timezone.
+/// closesAt <= opensAt means the interval runs past midnight.
+model OpeningHours {
+  id       String @id @default(cuid())
+  venueId  String
+  venue    Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  weekday  Int
+  opensAt  Int
+  closesAt Int
+
+  @@index([venueId, weekday])
+}
+
+model MenuCategory {
+  id        String     @id @default(cuid())
+  venueId   String
+  venue     Venue      @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  name      String
+  sortOrder Int        @default(0)
+  items     MenuItem[]
+
+  @@index([venueId])
+}
+
+model MenuItem {
+  id          String          @id @default(cuid())
+  venueId     String
+  venue       Venue           @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    MenuCategory    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name        String
+  description String          @default("")
+  price       Int
+  available   Boolean         @default(true)
+  sortOrder   Int             @default(0)
+  groups      ModifierGroup[]
+
+  @@index([venueId])
+  @@index([categoryId])
+}
+
+/// e.g. "Размер" (min 1, max 1), "Соус" (min 0, max 2), "Без..." (min 0, max N)
+model ModifierGroup {
+  id         String     @id @default(cuid())
+  menuItemId String
+  menuItem   MenuItem   @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  name       String
+  minSelect  Int        @default(0)
+  maxSelect  Int        @default(1)
+  sortOrder  Int        @default(0)
+  options    Modifier[]
+
+  @@index([menuItemId])
+}
+
+model Modifier {
+  id         String        @id @default(cuid())
+  groupId    String
+  group      ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name       String
+  priceDelta Int           @default(0)
+  sortOrder  Int           @default(0)
+
+  @@index([groupId])
+}
+
+model Order {
+  id               String      @id @default(cuid())
+  venueId          String
+  venue            Venue       @relation(fields: [venueId], references: [id], onDelete: Restrict)
+  customerName     String
+  customerPhone    String
+  arriveInMinutes  Int
+  pickupAt         DateTime
+  pickupCode       String      @db.Char(4)
+  status           OrderStatus @default(new)
+  paymentStatus    String      @default("unpaid")
+  currency         String      @db.Char(3)
+  totalAmount      Int
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  items            OrderItem[]
+
+  @@index([venueId, status])
+  @@index([venueId, createdAt])
+}
+
+/// Snapshot of the menu at placement time; intentionally no relation to MenuItem.
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  name      String
+  unitPrice Int
+  quantity  Int
+  /// [{ group: string, name: string, priceDelta: number }]
+  modifiers Json   @default("[]")
+  lineTotal Int
+
+  @@index([orderId])
+}
+
+model Lead {
+  id            String     @id @default(cuid())
+  venueName     String
+  country       String     @db.Char(2)
+  city          String
+  address       String
+  contactName   String
+  phone         String
+  email         String?
+  status        LeadStatus @default(lead)
+  nextContactAt DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  notes         LeadNote[]
+  venue         Venue?
+
+  @@index([status])
+}
+
+model LeadNote {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  text      String
+  createdAt DateTime @default(now())
+
+  @@index([leadId])
+}
