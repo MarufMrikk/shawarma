@@ -1,7 +1,13 @@
-export default function HomePage() {
+import { SiteHeader } from "@/components/SiteHeader";
+import { VenueFinder } from "@/components/VenueFinder";
+import { getVisibleVenues } from "@/lib/venues";
+
+export default async function HomePage() {
+  const venues = await getVisibleVenues();
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-10">
-      <h1 className="text-2xl font-bold">Шаверма — предзаказ</h1>
-    </main>
+    <>
+      <SiteHeader />
+      <VenueFinder venues={venues} />
+    </>
   );
 }
