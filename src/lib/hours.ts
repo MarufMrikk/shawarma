@@ -45,7 +45,7 @@ export function hhmmToMinutes(s: string): number | null {
 }
 
 export function formatInterval(h: Pick<HoursInterval, "opensAt" | "closesAt">): string {
-  if (h.opensAt === 0 && h.closesAt >= 1440) return "круглосуточно";
+  if ((h.opensAt === 0 && h.closesAt >= 1440) || h.opensAt === h.closesAt) return "круглосуточно";
   return `${minutesToHHMM(h.opensAt)}–${minutesToHHMM(h.closesAt)}`;
 }
 

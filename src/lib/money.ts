@@ -28,3 +28,8 @@ export function parseMoney(input: string, currency: string): number | null {
   if (!/^\d+(\.\d+)?$/.test(normalized)) return null;
   return Math.round(Number(normalized) * 10 ** currencyDigits(currency));
 }
+
+/** Minor units -> plain major-unit string for form inputs, e.g. 35050 -> "350.5". */
+export function toMajorString(minor: number, currency: string): string {
+  return String(minor / 10 ** currencyDigits(currency));
+}

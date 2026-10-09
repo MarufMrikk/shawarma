@@ -10,6 +10,9 @@ export default async function OwnerLayout({ children }: LayoutProps<"/owner">) {
         userName={user.name ?? ""}
         links={[
           { href: "/owner", label: "Заведение" },
+          { href: "/owner/hours", label: "Часы работы" },
+          { href: "/owner/menu", label: "Меню" },
+          { href: "/owner/orders", label: "Заказы" },
           { href: "/kitchen", label: "Кухня" },
         ]}
       />

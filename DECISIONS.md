@@ -16,3 +16,9 @@
 - Closed venues still show their menu page, but ordering is disabled; unapproved venues return 404.
 - Order page polls via `router.refresh()` every 8 s until picked up/cancelled; order link = unguessable cuid.
 - Customer-facing note "оплата при получении" (no payment step in this version).
+- One opening interval per weekday in the owner UI (schema allows more); 00:00–00:00 = 24h.
+- Status changes use a conditional `updateMany` on the current status (safe for two kitchen devices).
+- Hand-over: "Выдать" asks the cook to confirm the 4-digit code; no code entry field.
+- Owner address change re-geocodes via Nominatim; save fails if the address isn't found.
+- Country, currency and timezone are read-only for owners (set by admin).
+- Staff (cook) accounts are not managed in the owner UI yet; see phase 4 invites.
