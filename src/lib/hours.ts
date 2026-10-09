@@ -54,3 +54,19 @@ export function todayHoursLabel(hours: HoursInterval[], timezone: string, now: D
   const today = hours.filter((h) => h.weekday === weekday);
   return today.length ? today.map(formatInterval).join(", ") : "сегодня выходной";
 }
+
+/** "до 02:00" / "круглосуточно" for a venue that is open now; null if closed. */
+export function openUntilLabel(hours: HoursInterval[], timezone: string, now: Date = new Date()): string | null {
+  const { weekday, minutes } = localTime(timezone, now);
+  const yesterday = (weekday + 6) % 7;
+  const current = hours.find((h) =>
+    h.weekday === weekday
+      ? overnight(h)
+        ? minutes >= h.opensAt
+        : minutes >= h.opensAt && minutes < h.closesAt
+      : h.weekday === yesterday && overnight(h) && minutes < h.closesAt,
+  );
+  if (!current) return null;
+  if ((current.opensAt === 0 && current.closesAt >= 1440) || current.opensAt === current.closesAt) return "круглосуточно";
+  return current.closesAt % 1440 === 0 ? "до полуночи" : `до ${minutesToHHMM(current.closesAt % 1440)}`;
+}

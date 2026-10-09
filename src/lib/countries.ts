@@ -3,15 +3,9 @@ export type CountryInfo = { code: string; name: string; currency: string; timezo
 /** Supported countries with defaults for new venues (admin can override currency/timezone). */
 export const COUNTRIES: CountryInfo[] = [
   { code: "RU", name: "Россия", currency: "RUB", timezone: "Europe/Moscow" },
-  { code: "KZ", name: "Казахстан", currency: "KZT", timezone: "Asia/Almaty" },
-  { code: "UZ", name: "Узбекистан", currency: "UZS", timezone: "Asia/Tashkent" },
-  { code: "BY", name: "Беларусь", currency: "BYN", timezone: "Europe/Minsk" },
-  { code: "KG", name: "Кыргызстан", currency: "KGS", timezone: "Asia/Bishkek" },
-  { code: "TJ", name: "Таджикистан", currency: "TJS", timezone: "Asia/Dushanbe" },
-  { code: "AM", name: "Армения", currency: "AMD", timezone: "Asia/Yerevan" },
-  { code: "AZ", name: "Азербайджан", currency: "AZN", timezone: "Asia/Baku" },
-  { code: "MD", name: "Молдова", currency: "MDL", timezone: "Europe/Chisinau" },
 ];
+
+export const DEFAULT_CITY = { name: "Москва", lat: 55.7558, lng: 37.6173 };
 
 export const countryByCode = (code: string) => COUNTRIES.find((c) => c.code === code);
 

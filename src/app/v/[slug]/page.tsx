@@ -1,14 +1,15 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { db } from "@/lib/db";
-import { isOpenAt, todayHoursLabel } from "@/lib/hours";
+import { openUntilLabel, todayHoursLabel } from "@/lib/hours";
 import { getVenueMenu } from "@/lib/menu";
 import { VenueMenu } from "./VenueMenu";
 
 export async function generateMetadata({ params }: PageProps<"/v/[slug]">) {
   const { slug } = await params;
   const venue = await db.venue.findUnique({ where: { slug }, select: { name: true } });
-  return { title: venue?.name ?? "Заведение" };
+  return { title: venue?.name ?? "Шавермная" };
 }
 
 export default async function VenuePage({ params }: PageProps<"/v/[slug]">) {
@@ -17,22 +18,33 @@ export default async function VenuePage({ params }: PageProps<"/v/[slug]">) {
   if (!venue?.approved) notFound();
 
   const menu = await getVenueMenu(venue.id);
-  const open = isOpenAt(venue.hours, venue.timezone);
+  const openUntil = openUntilLabel(venue.hours, venue.timezone);
 
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl px-4 py-6">
-        <h1 className="text-2xl font-bold">{venue.name}</h1>
-        <p className="text-neutral-600">
-          {venue.city}, {venue.address}
-        </p>
-        <p className="text-sm text-neutral-500">
-          Сегодня: {todayHoursLabel(venue.hours, venue.timezone)} ·{" "}
-          {open ? <span className="text-green-700">открыто</span> : <span className="text-red-600">закрыто</span>}
-        </p>
-        <VenueMenu slug={venue.slug} currency={venue.currency} menu={menu} canOrder={open && menu.length > 0} />
-      </main>
+      <section className="bg-board text-white">
+        <div className="mx-auto max-w-6xl px-4 pb-8 pt-5">
+          <Link href="/" className="text-sm text-white/60 hover:text-white">
+            ← Все шавермные на карте
+          </Link>
+          <h1 className="mt-4 font-display text-3xl font-extrabold leading-[1.1] sm:text-4xl">{venue.name}</h1>
+          <p className="mt-2 text-white/75">{venue.address}</p>
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+            {openUntil ? (
+              <span className="rounded-full bg-herb px-3 py-1 font-semibold">Открыто {openUntil}</span>
+            ) : (
+              <span className="rounded-full bg-white/15 px-3 py-1 font-semibold">
+                Сейчас закрыто, сегодня {todayHoursLabel(venue.hours, venue.timezone)}
+              </span>
+            )}
+            <a href={`tel:${venue.phone}`} className="text-white/75 hover:text-white">
+              {venue.phone}
+            </a>
+          </div>
+        </div>
+      </section>
+      <VenueMenu slug={venue.slug} currency={venue.currency} menu={menu} canOrder={!!openUntil && menu.length > 0} />
     </>
   );
 }

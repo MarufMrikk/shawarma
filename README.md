@@ -8,7 +8,7 @@ Next.js 16 + PostgreSQL (Prisma 7) + Auth.js + Leaflet/OpenStreetMap.
 npm install
 cp .env.example .env        # заполнить DATABASE_URL и AUTH_SECRET
 npx prisma migrate dev      # создать схему
-npx prisma db seed          # 3 тестовых заведения (RU, KZ, UZ)
+npx prisma db seed          # 5 тестовых заведений в Москве
 npm run dev
 ```
 
@@ -22,7 +22,7 @@ npm run dev
 
 ## Тестовые пользователи
 
-`admin@shawarma.local`, `owner-msk@…`, `cook-msk@…` (также `-ala`, `-tas`) — домен `shawarma.local`.
+`admin@shawarma.local`, `owner-tverskaya@shawarma.local`, `cook-tverskaya@shawarma.local` (также `-myasnitskaya`, `-arbat`, `-kurskaya`, `-lesnaya`).
 
 ## Тесты
 

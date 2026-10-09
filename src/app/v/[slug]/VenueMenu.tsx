@@ -5,10 +5,11 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import type { MenuCategoryData } from "@/lib/menu";
 import { formatMoney } from "@/lib/money";
 import { ARRIVE_OPTIONS } from "@/lib/orderStatus";
-import { priceLine, type MenuItemData } from "@/lib/pricing";
+import { priceLine, type MenuItemData, type ModifierSnapshot } from "@/lib/pricing";
 import { placeOrder } from "./actions";
 
 type CartLine = { key: string; itemId: string; quantity: number; optionIds: string[] };
+type PricedLine = { line: CartLine; item: MenuItemData; unitPrice: number; modifiers: ModifierSnapshot[] };
 
 const CUSTOMER_KEY = "customer";
 
@@ -26,6 +27,14 @@ function writeStorage(key: string, value: unknown) {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {}
 }
+
+const plural = (n: number, one: string, few: string, many: string) => {
+  const m10 = n % 10;
+  const m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return one;
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+  return many;
+};
 
 export function VenueMenu({
   slug,
@@ -45,6 +54,7 @@ export function VenueMenu({
   const [cart, setCart] = useState<CartLine[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [editing, setEditing] = useState<MenuItemData | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [arriveIn, setArriveIn] = useState<number>(15);
@@ -64,13 +74,16 @@ export function VenueMenu({
     if (loaded) writeStorage(cartKey, cart);
   }, [cart, cartKey, loaded]);
 
-  const pricedCart = cart.flatMap((line) => {
+  const pricedCart: PricedLine[] = cart.flatMap((line) => {
     const item = itemsById.get(line.itemId);
     if (!item) return [];
     const priced = priceLine(item, line.optionIds);
-    return priced.ok ? [{ line, item, ...priced }] : [];
+    return priced.ok ? [{ line, item, unitPrice: priced.unitPrice, modifiers: priced.modifiers }] : [];
   });
   const total = pricedCart.reduce((s, l) => s + l.unitPrice * l.line.quantity, 0);
+  const count = pricedCart.reduce((s, l) => s + l.line.quantity, 0);
+  const qtyByItem = new Map<string, number>();
+  for (const l of pricedCart) qtyByItem.set(l.item.id, (qtyByItem.get(l.item.id) ?? 0) + l.line.quantity);
 
   function addToCart(item: MenuItemData, optionIds: string[]) {
     const key = `${item.id}|${[...optionIds].sort().join(",")}`;
@@ -106,11 +119,7 @@ export function VenueMenu({
         name,
         phone,
         arriveInMinutes: arriveIn,
-        lines: pricedCart.map(({ line }) => ({
-          itemId: line.itemId,
-          quantity: line.quantity,
-          optionIds: line.optionIds,
-        })),
+        lines: pricedCart.map(({ line }) => ({ itemId: line.itemId, quantity: line.quantity, optionIds: line.optionIds })),
       });
       if (!result.ok) {
         setError(result.error);
@@ -122,134 +131,301 @@ export function VenueMenu({
     });
   }
 
+  const cartPanel = (
+    <CartPanel
+      lines={pricedCart}
+      total={total}
+      currency={currency}
+      canOrder={canOrder}
+      changeQty={changeQty}
+      name={name}
+      setName={setName}
+      phone={phone}
+      setPhone={setPhone}
+      arriveIn={arriveIn}
+      setArriveIn={setArriveIn}
+      error={error}
+      pending={pending}
+      onSubmit={submit}
+    />
+  );
+
   return (
-    <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_360px]">
-      <div className="space-y-8">
-        {menu.length === 0 && <p className="text-neutral-500">Меню пока пустое.</p>}
-        {menu.map((cat) => (
-          <section key={cat.id}>
-            <h2 className="mb-3 text-lg font-semibold">{cat.name}</h2>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {cat.items.map((item) => (
-                <div key={item.id} className="flex flex-col rounded-xl border border-neutral-200 bg-white p-4">
-                  <div className="font-medium">{item.name}</div>
-                  {item.description && <div className="text-sm text-neutral-600">{item.description}</div>}
-                  <div className="mt-auto flex items-center justify-between pt-3">
-                    <span className="font-semibold">{formatMoney(item.price, currency)}</span>
-                    <button className="btn-primary text-sm" disabled={!canOrder} onClick={() => onItemClick(item)}>
-                      {item.groups.length ? "Выбрать" : "В корзину"}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        ))}
+    <>
+      {menu.length > 1 && (
+        <nav className="sticky top-0 z-20 border-b border-line bg-page/95 backdrop-blur">
+          <div className="mx-auto flex max-w-6xl gap-2 overflow-x-auto px-4 py-3">
+            {menu.map((cat) => (
+              <a
+                key={cat.id}
+                href={`#cat-${cat.id}`}
+                className="shrink-0 rounded-full border border-line bg-white px-4 py-1.5 text-sm font-medium hover:border-board"
+              >
+                {cat.name}
+              </a>
+            ))}
+          </div>
+        </nav>
+      )}
+
+      <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 pb-32 pt-6 lg:grid-cols-[1fr_360px] lg:pb-12">
+        <div className="rounded-3xl bg-board px-5 py-6 text-white sm:px-8 sm:py-8">
+          {!canOrder && (
+            <p className="mb-6 rounded-xl bg-white/10 px-4 py-3 text-sm text-white/80">
+              Сейчас заказы не принимаются — меню можно посмотреть.
+            </p>
+          )}
+          {menu.length === 0 && <p className="text-white/70">Меню пока пустое.</p>}
+          {menu.map((cat) => (
+            <section key={cat.id} id={`cat-${cat.id}`} className="scroll-mt-20 [&+&]:mt-10">
+              <h2 className="mb-4 font-display text-lg font-bold text-turmeric">{cat.name}</h2>
+              <ul className="space-y-5">
+                {cat.items.map((item) => {
+                  const qty = qtyByItem.get(item.id) ?? 0;
+                  return (
+                    <li key={item.id} className="flex items-start gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline">
+                          <span className="text-[17px] font-semibold">{item.name}</span>
+                          <span className="leader" aria-hidden />
+                          <span className="font-display text-[15px] font-bold text-turmeric">
+                            {formatMoney(item.price, currency)}
+                          </span>
+                        </div>
+                        {item.description && <p className="mt-1 text-sm text-white/60">{item.description}</p>}
+                      </div>
+                      <button
+                        className="relative mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-chili text-2xl leading-none font-medium transition-colors hover:bg-chili-dark disabled:bg-white/15 disabled:text-white/40"
+                        disabled={!canOrder}
+                        onClick={() => onItemClick(item)}
+                        aria-label={`Добавить «${item.name}»`}
+                      >
+                        +
+                        {qty > 0 && (
+                          <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-turmeric px-1 text-xs font-bold text-board">
+                            {qty}
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
+        </div>
+
+        <aside className="hidden lg:block">
+          <div className="sticky top-20">{cartPanel}</div>
+        </aside>
       </div>
 
-      <aside className="h-fit rounded-xl border border-neutral-200 bg-white p-4 lg:sticky lg:top-4">
-        <h2 className="mb-3 text-lg font-semibold">Корзина</h2>
-        {pricedCart.length === 0 ? (
-          <p className="text-sm text-neutral-500">Пока пусто</p>
-        ) : (
-          <ul className="mb-4 space-y-3">
-            {pricedCart.map(({ line, item, unitPrice, modifiers }) => (
-              <li key={line.key} className="text-sm">
-                <div className="flex justify-between gap-2">
-                  <span className="font-medium">{item.name}</span>
-                  <span>{formatMoney(unitPrice * line.quantity, currency)}</span>
+      {count > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white p-3 lg:hidden">
+          <button className="btn-primary w-full justify-between py-3.5" onClick={() => setSheetOpen(true)}>
+            <span>
+              Корзина: {count} {plural(count, "позиция", "позиции", "позиций")}
+            </span>
+            <span className="font-display">{formatMoney(total, currency)}</span>
+          </button>
+        </div>
+      )}
+
+      {sheetOpen && (
+        <Sheet onClose={() => setSheetOpen(false)} label="Корзина">
+          {cartPanel}
+        </Sheet>
+      )}
+
+      {editing && (
+        <Sheet onClose={() => setEditing(null)} label={editing.name}>
+          <ItemOptions
+            item={editing}
+            currency={currency}
+            onCancel={() => setEditing(null)}
+            onAdd={(optionIds) => {
+              addToCart(editing, optionIds);
+              setEditing(null);
+            }}
+          />
+        </Sheet>
+      )}
+    </>
+  );
+}
+
+function Sheet({ children, onClose, label }: { children: React.ReactNode; onClose: () => void; label: string }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[1000] flex items-end justify-center bg-board/50 sm:items-center"
+      onClick={onClose}
+      role="dialog"
+      aria-modal
+      aria-label={label}
+    >
+      <div
+        className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-page p-3 sm:rounded-3xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function CartPanel({
+  lines,
+  total,
+  currency,
+  canOrder,
+  changeQty,
+  name,
+  setName,
+  phone,
+  setPhone,
+  arriveIn,
+  setArriveIn,
+  error,
+  pending,
+  onSubmit,
+}: {
+  lines: PricedLine[];
+  total: number;
+  currency: string;
+  canOrder: boolean;
+  changeQty: (key: string, delta: number) => void;
+  name: string;
+  setName: (v: string) => void;
+  phone: string;
+  setPhone: (v: string) => void;
+  arriveIn: number;
+  setArriveIn: (v: number) => void;
+  error: string | null;
+  pending: boolean;
+  onSubmit: (e: React.FormEvent) => void;
+}) {
+  return (
+    <div className="receipt rounded-t-2xl px-5 pt-5 shadow-[0_10px_30px_rgba(42,31,61,.08)]">
+      <h2 className="font-display text-lg font-bold">Ваш заказ</h2>
+      {lines.length === 0 ? (
+        <p className="mt-2 pb-2 text-sm text-muted">Нажмите «+» у позиции в меню, чтобы добавить её сюда.</p>
+      ) : (
+        <>
+          <ul className="mt-3 divide-y divide-dashed divide-line">
+            {lines.map(({ line, item, unitPrice, modifiers }) => (
+              <li key={line.key} className="py-3 text-sm">
+                <div className="flex justify-between gap-3">
+                  <span className="font-semibold">{item.name}</span>
+                  <span className="shrink-0 font-medium">{formatMoney(unitPrice * line.quantity, currency)}</span>
                 </div>
-                {modifiers.length > 0 && (
-                  <div className="text-neutral-500">{modifiers.map((m) => m.name).join(", ")}</div>
-                )}
-                <div className="mt-1 flex items-center gap-2">
-                  <button className="h-7 w-7 rounded border" onClick={() => changeQty(line.key, -1)}>
+                {modifiers.length > 0 && <div className="text-muted">{modifiers.map((m) => m.name).join(", ")}</div>}
+                <div className="mt-2 inline-flex items-center rounded-full border border-line">
+                  <button
+                    type="button"
+                    className="h-8 w-8 rounded-full text-lg hover:bg-page"
+                    onClick={() => changeQty(line.key, -1)}
+                    aria-label="Убрать одну"
+                  >
                     −
                   </button>
-                  <span className="w-6 text-center">{line.quantity}</span>
-                  <button className="h-7 w-7 rounded border" onClick={() => changeQty(line.key, 1)}>
+                  <span className="w-6 text-center font-semibold">{line.quantity}</span>
+                  <button
+                    type="button"
+                    className="h-8 w-8 rounded-full text-lg hover:bg-page"
+                    onClick={() => changeQty(line.key, 1)}
+                    aria-label="Добавить ещё одну"
+                  >
                     +
                   </button>
                 </div>
               </li>
             ))}
           </ul>
-        )}
 
-        {pricedCart.length > 0 && (
-          <form onSubmit={submit} className="space-y-3 border-t border-neutral-200 pt-4">
-            <div className="flex justify-between font-semibold">
-              <span>Итого</span>
-              <span>{formatMoney(total, currency)}</span>
-            </div>
-            <input
-              className="input"
-              placeholder="Имя"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              maxLength={60}
-              autoComplete="given-name"
-            />
-            <input
-              className="input"
-              placeholder="Телефон, +7…"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-              type="tel"
-              autoComplete="tel"
-            />
+          <div className="flex items-baseline justify-between border-t-2 border-dashed border-line pt-3">
+            <span className="font-semibold">Итого</span>
+            <span className="font-display text-xl font-bold">{formatMoney(total, currency)}</span>
+          </div>
+
+          <form onSubmit={onSubmit} className="mt-5 space-y-3">
             <div>
-              <div className="mb-1 text-sm text-neutral-600">Приду через</div>
-              <div className="grid grid-cols-4 gap-2">
+              <label htmlFor="cart-name" className="mb-1 block text-sm font-medium">
+                Имя
+              </label>
+              <input
+                id="cart-name"
+                className="input"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                maxLength={60}
+                autoComplete="given-name"
+              />
+            </div>
+            <div>
+              <label htmlFor="cart-phone" className="mb-1 block text-sm font-medium">
+                Телефон
+              </label>
+              <input
+                id="cart-phone"
+                className="input"
+                placeholder="+7 900 000-00-00"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+                type="tel"
+                autoComplete="tel"
+              />
+            </div>
+            <fieldset>
+              <legend className="mb-1 text-sm font-medium">Приду через</legend>
+              <div className="grid grid-cols-4 gap-1.5">
                 {ARRIVE_OPTIONS.map((m) => (
                   <button
                     type="button"
                     key={m}
                     onClick={() => setArriveIn(m)}
-                    className={`rounded-lg border py-2 text-sm ${
-                      arriveIn === m ? "border-orange-600 bg-orange-50 font-semibold" : "border-neutral-300"
+                    aria-pressed={arriveIn === m}
+                    className={`rounded-xl border py-2 text-sm font-semibold transition-colors ${
+                      arriveIn === m ? "border-board bg-board text-white" : "border-line bg-white hover:border-board"
                     }`}
                   >
                     {m} мин
                   </button>
                 ))}
               </div>
-            </div>
-            {error && <p className="text-sm text-red-600">{error}</p>}
-            <button className="btn-primary w-full" disabled={pending || !canOrder}>
-              {pending ? "Отправляем…" : "Заказать"}
+            </fieldset>
+            {error && <p className="text-sm font-medium text-chili">{error}</p>}
+            <button className="btn-primary w-full py-3" disabled={pending || !canOrder}>
+              {pending ? "Отправляем заказ…" : `Заказать за ${formatMoney(total, currency)}`}
             </button>
-            <p className="text-xs text-neutral-500">Оплата при получении в заведении.</p>
+            <p className="text-center text-xs text-muted">Оплата в шавермной при получении</p>
           </form>
-        )}
-      </aside>
-
-      {editing && (
-        <ItemDialog
-          item={editing}
-          currency={currency}
-          onClose={() => setEditing(null)}
-          onAdd={(optionIds) => {
-            addToCart(editing, optionIds);
-            setEditing(null);
-          }}
-        />
+        </>
       )}
     </div>
   );
 }
 
-function ItemDialog({
+function ItemOptions({
   item,
   currency,
-  onClose,
+  onCancel,
   onAdd,
 }: {
   item: MenuItemData;
   currency: string;
-  onClose: () => void;
+  onCancel: () => void;
   onAdd: (optionIds: string[]) => void;
 }) {
   const [selected, setSelected] = useState<string[]>(() =>
@@ -261,63 +437,67 @@ function ItemDialog({
     const group = item.groups.find((g) => g.id === groupId)!;
     const groupIds = new Set(group.options.map((o) => o.id));
     setSelected((prev) => {
+      if (prev.includes(optionId)) {
+        const inGroup = prev.filter((id) => groupIds.has(id)).length;
+        return inGroup > group.minSelect ? prev.filter((id) => id !== optionId) : prev;
+      }
       if (group.maxSelect === 1) return [...prev.filter((id) => !groupIds.has(id)), optionId];
-      if (prev.includes(optionId)) return prev.filter((id) => id !== optionId);
       if (prev.filter((id) => groupIds.has(id)).length >= group.maxSelect) return prev;
       return [...prev, optionId];
     });
   }
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-end justify-center bg-black/40 sm:items-center" onClick={onClose}>
-      <div
-        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white p-5 sm:rounded-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="text-lg font-semibold">{item.name}</h3>
-        {item.description && <p className="text-sm text-neutral-600">{item.description}</p>}
-        <div className="mt-4 space-y-4">
-          {item.groups.map((g) => (
-            <fieldset key={g.id}>
-              <legend className="mb-2 text-sm font-medium">
-                {g.name}
-                <span className="ml-1 font-normal text-neutral-500">
-                  {g.maxSelect === 1 ? (g.minSelect ? "(обязательно)" : "(одно)") : `(до ${g.maxSelect})`}
-                </span>
-              </legend>
-              <div className="space-y-1">
-                {g.options.map((o) => (
-                  <label key={o.id} className="flex cursor-pointer items-center gap-2 text-sm">
-                    <input
-                      type={g.maxSelect === 1 ? "radio" : "checkbox"}
-                      name={g.id}
-                      checked={selected.includes(o.id)}
-                      onChange={() => toggle(g.id, o.id)}
-                      onClick={() => {
-                        if (g.maxSelect === 1 && g.minSelect === 0 && selected.includes(o.id)) {
-                          setSelected((prev) => prev.filter((id) => id !== o.id));
-                        }
-                      }}
-                    />
-                    <span className="flex-1">{o.name}</span>
+    <div className="rounded-2xl bg-white p-5">
+      <h3 className="font-display text-xl font-bold">{item.name}</h3>
+      {item.description && <p className="mt-1 text-sm text-muted">{item.description}</p>}
+      <div className="mt-5 space-y-5">
+        {item.groups.map((g) => (
+          <fieldset key={g.id}>
+            <legend className="mb-2 flex w-full items-baseline justify-between text-sm">
+              <span className="font-semibold">{g.name}</span>
+              <span className="text-muted">
+                {g.minSelect > 0 && g.maxSelect === 1
+                  ? "выберите один"
+                  : g.maxSelect === 1
+                    ? "по желанию"
+                    : `до ${g.maxSelect}`}
+              </span>
+            </legend>
+            <div className="flex flex-wrap gap-2">
+              {g.options.map((o) => {
+                const on = selected.includes(o.id);
+                return (
+                  <button
+                    type="button"
+                    key={o.id}
+                    aria-pressed={on}
+                    onClick={() => toggle(g.id, o.id)}
+                    className={`rounded-xl border px-3 py-2 text-sm transition-colors ${
+                      on ? "border-board bg-board text-white" : "border-line bg-white hover:border-board"
+                    }`}
+                  >
+                    {o.name}
                     {o.priceDelta !== 0 && (
-                      <span className="text-neutral-500">+{formatMoney(o.priceDelta, currency)}</span>
+                      <span className={on ? "ml-1 text-turmeric" : "ml-1 text-muted"}>
+                        +{formatMoney(o.priceDelta, currency)}
+                      </span>
                     )}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-          ))}
-        </div>
-        {!priced.ok && <p className="mt-3 text-sm text-red-600">{priced.error}</p>}
-        <div className="mt-5 flex gap-2">
-          <button className="btn-secondary flex-1" onClick={onClose}>
-            Отмена
-          </button>
-          <button className="btn-primary flex-1" disabled={!priced.ok} onClick={() => onAdd(selected)}>
-            Добавить{priced.ok ? ` · ${formatMoney(priced.unitPrice, currency)}` : ""}
-          </button>
-        </div>
+                  </button>
+                );
+              })}
+            </div>
+          </fieldset>
+        ))}
+      </div>
+      {!priced.ok && <p className="mt-3 text-sm text-chili">{priced.error}</p>}
+      <div className="mt-6 flex gap-2">
+        <button className="btn-secondary" onClick={onCancel}>
+          Отмена
+        </button>
+        <button className="btn-primary flex-1" disabled={!priced.ok} onClick={() => onAdd(selected)}>
+          Добавить{priced.ok ? ` за ${formatMoney(priced.unitPrice, currency)}` : ""}
+        </button>
       </div>
     </div>
   );

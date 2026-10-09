@@ -2,58 +2,34 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { distanceKm } from "@/lib/geo";
+import { formatMoney } from "@/lib/money";
 import type { VenueCard } from "@/lib/venues";
+import type { MapView, Point } from "./VenueMap";
 
 const VenueMap = dynamic(() => import("./VenueMap"), {
   ssr: false,
-  loading: () => <div className="absolute inset-0 animate-pulse bg-neutral-200" />,
+  loading: () => <div className="absolute inset-0 animate-pulse bg-[#e8e6ee]" />,
 });
 
-type Point = { lat: number; lng: number };
-type GeoState = "pending" | "granted" | "denied";
+type GeoState = "idle" | "locating" | "denied";
 
-const DEFAULT_CENTER: Point = { lat: 48, lng: 60 };
+const CITY = "Москва";
 
 export function VenueFinder({ venues }: { venues: VenueCard[] }) {
   const [user, setUser] = useState<Point | null>(null);
-  const [geo, setGeo] = useState<GeoState>("pending");
-  const [city, setCity] = useState("");
-  const [cityError, setCityError] = useState<string | null>(null);
+  const [geo, setGeo] = useState<GeoState>("idle");
+  const [query, setQuery] = useState("");
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
-
-  useEffect(() => {
-    if (!("geolocation" in navigator)) {
-      setGeo("denied");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setUser({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setGeo("granted");
-      },
-      () => setGeo("denied"),
-      { timeout: 10000, maximumAge: 300000 },
-    );
-  }, []);
-
-  async function searchCity(e: React.FormEvent) {
-    e.preventDefault();
-    if (!city.trim()) return;
-    setSearching(true);
-    setCityError(null);
-    try {
-      const res = await fetch(`/api/geocode?q=${encodeURIComponent(city.trim())}`);
-      if (!res.ok) throw new Error();
-      const point = (await res.json()) as Point;
-      setUser({ lat: point.lat, lng: point.lng });
-    } catch {
-      setCityError("Город не найден");
-    } finally {
-      setSearching(false);
-    }
-  }
+  const [selected, setSelected] = useState<string | null>(null);
+  const [view, setView] = useState<MapView>(() => ({
+    id: 0,
+    kind: "bounds",
+    points: venues.flatMap((v) => (v.lat !== null && v.lng !== null ? [{ lat: v.lat, lng: v.lng }] : [])),
+  }));
+  const rowRefs = useRef(new Map<string, HTMLLIElement>());
 
   const sorted = useMemo(() => {
     const withDistance = venues.map((v) => ({
@@ -63,60 +39,160 @@ export function VenueFinder({ venues }: { venues: VenueCard[] }) {
     return withDistance.sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
   }, [venues, user]);
 
-  const nearest = sorted[0];
-  const center =
-    user ?? (nearest?.lat != null && nearest.lng != null ? { lat: nearest.lat, lng: nearest.lng } : DEFAULT_CENTER);
-  const zoom = user ? 12 : venues.length ? 4 : 3;
+  const showAround = useCallback(
+    (point: Point) => {
+      setUser(point);
+      const nearest = venues
+        .flatMap((v) => (v.lat !== null && v.lng !== null ? [{ lat: v.lat, lng: v.lng }] : []))
+        .sort((a, b) => distanceKm(point, a) - distanceKm(point, b))
+        .slice(0, 3);
+      setView((prev) => ({ id: prev.id + 1, kind: "bounds", points: [point, ...nearest] }));
+    },
+    [venues],
+  );
+
+  const locate = useCallback(() => {
+    if (!("geolocation" in navigator)) {
+      setGeo("denied");
+      return;
+    }
+    setGeo("locating");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGeo("idle");
+        showAround({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      },
+      () => setGeo("denied"),
+      { timeout: 10000, maximumAge: 300000 },
+    );
+  }, [showAround]);
+
+  useEffect(() => {
+    locate();
+  }, [locate]);
+
+  async function search(e: React.FormEvent) {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    setSearching(true);
+    setSearchError(null);
+    try {
+      const res = await fetch(`/api/geocode?country=RU&q=${encodeURIComponent(`${CITY}, ${q}`)}`);
+      if (!res.ok) throw new Error();
+      showAround((await res.json()) as Point);
+    } catch {
+      setSearchError("Не нашли такой адрес в Москве. Попробуйте улицу с номером дома или станцию метро.");
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function selectFromMap(slug: string) {
+    setSelected(slug);
+    rowRefs.current.get(slug)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function selectFromList(v: VenueCard) {
+    setSelected(v.slug);
+    if (v.lat !== null && v.lng !== null) {
+      setView((prev) => ({ id: prev.id + 1, kind: "point", point: { lat: v.lat!, lng: v.lng! }, zoom: 15 }));
+    }
+  }
 
   return (
-    <div className="flex flex-1 flex-col md:h-[calc(100vh-57px)] md:flex-row">
-      <div className="relative h-[45vh] md:h-auto md:flex-1">
-        <VenueMap venues={venues} center={center} zoom={zoom} user={user} />
+    <div className="flex flex-1 flex-col md:h-[calc(100vh-3.5rem)] md:flex-row">
+      <div className="relative h-[52vh] md:h-auto md:flex-1">
+        <VenueMap venues={venues} selected={selected} onSelect={selectFromMap} user={user} view={view} />
       </div>
-      <aside className="w-full overflow-y-auto border-l border-neutral-200 bg-white p-4 md:max-w-sm">
-        {geo !== "granted" && (
-          <form onSubmit={searchCity} className="mb-4 flex gap-2">
+
+      <aside className="relative z-10 -mt-5 flex flex-col rounded-t-3xl bg-white md:mt-0 md:w-[400px] md:rounded-none md:border-l md:border-line">
+        <div className="border-b border-line px-5 pb-4 pt-5">
+          <h1 className="font-display text-xl font-bold leading-tight">Шаверма рядом с вами</h1>
+          <p className="mt-1 text-sm text-muted">Закажите заранее и заберите без очереди.</p>
+
+          <form onSubmit={search} className="mt-4 flex gap-2">
+            <label className="sr-only" htmlFor="address">
+              Адрес или метро
+            </label>
             <input
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder={geo === "pending" ? "Определяем местоположение…" : "Ваш город"}
+              id="address"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Адрес или метро"
               className="input"
+              autoComplete="street-address"
             />
-            <button className="btn-secondary" disabled={searching}>
-              Найти
+            <button className="btn-secondary shrink-0" disabled={searching}>
+              {searching ? "Ищем…" : "Найти"}
             </button>
           </form>
-        )}
-        {cityError && <p className="mb-3 text-sm text-red-600">{cityError}</p>}
+          <button
+            type="button"
+            onClick={locate}
+            disabled={geo === "locating"}
+            className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-board hover:text-chili disabled:opacity-60"
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <circle cx="12" cy="12" r="3.5" />
+              <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+            </svg>
+            {geo === "locating" ? "Определяем местоположение…" : "Показать шавермы рядом со мной"}
+          </button>
+          {geo === "denied" && !user && (
+            <p className="mt-2 text-sm text-muted">Доступ к геолокации закрыт — введите адрес.</p>
+          )}
+          {searchError && <p className="mt-2 text-sm text-chili">{searchError}</p>}
+        </div>
 
-        <h2 className="mb-3 font-semibold">{user ? "Ближайшие шавермы" : "Открытые шавермы"}</h2>
-        {sorted.length === 0 && <p className="text-neutral-500">Сейчас нет открытых заведений.</p>}
-        <ul className="space-y-2">
-          {sorted.map((v) => (
-            <li key={v.slug}>
-              <Link
-                href={`/v/${v.slug}`}
-                className="block rounded-lg border border-neutral-200 p-3 hover:border-orange-400"
-              >
-                <div className="flex justify-between gap-2">
-                  <span className="font-medium">{v.name}</span>
-                  {v.distance !== null && (
-                    <span className="shrink-0 text-sm text-neutral-500">{formatDistance(v.distance)}</span>
-                  )}
-                </div>
-                <div className="text-sm text-neutral-600">
-                  {v.city}, {v.address}
-                </div>
-                <div className="text-xs text-neutral-500">{v.hoursLabel}</div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <div className="flex-1 overflow-y-auto">
+          {sorted.length === 0 ? (
+            <div className="px-5 py-8">
+              <p className="font-medium">Сейчас все шавермные закрыты.</p>
+              <p className="mt-1 text-sm text-muted">Загляните позже — большинство открывается к 10:00.</p>
+            </div>
+          ) : (
+            <ul>
+              {sorted.map((v) => {
+                const isSelected = v.slug === selected;
+                return (
+                  <li
+                    key={v.slug}
+                    ref={(el) => {
+                      if (el) rowRefs.current.set(v.slug, el);
+                      else rowRefs.current.delete(v.slug);
+                    }}
+                    className={`border-b border-l-4 border-b-line transition-colors ${
+                      isSelected ? "border-l-chili bg-page" : "border-l-transparent"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3 px-5 py-4">
+                      <button type="button" onClick={() => selectFromList(v)} className="min-w-0 flex-1 text-left">
+                        <div className="font-semibold">{v.name}</div>
+                        <div className="truncate text-sm text-muted">{v.address}</div>
+                        <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-sm">
+                          {v.distance !== null && <span className="font-medium">{formatDistance(v.distance)}</span>}
+                          <span className="text-herb">Открыто {v.hoursLabel}</span>
+                          {v.minPrice !== null && (
+                            <span className="text-muted">от {formatMoney(v.minPrice, v.currency)}</span>
+                          )}
+                        </div>
+                      </button>
+                      <Link href={`/v/${v.slug}`} className="btn-primary shrink-0 px-3.5 py-2 text-sm">
+                        Меню
+                      </Link>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </aside>
     </div>
   );
 }
 
 function formatDistance(km: number) {
-  return km < 1 ? `${Math.round(km * 1000)} м` : `${km < 10 ? km.toFixed(1) : Math.round(km)} км`;
+  return km < 1 ? `${Math.round(km * 100) * 10} м` : `${km < 10 ? km.toFixed(1).replace(".", ",") : Math.round(km)} км`;
 }

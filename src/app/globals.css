@@ -1,19 +1,78 @@
 @import "tailwindcss";
 
+@theme {
+  --color-board: #2a1f3d;
+  --color-board-2: #3a2d52;
+  --color-chili: #d7261e;
+  --color-chili-dark: #b01d16;
+  --color-turmeric: #f6b40e;
+  --color-herb: #2e7d4f;
+  --color-page: #f4f3f7;
+  --color-ink: #1d1729;
+  --color-muted: #6b6478;
+  --color-line: #e2dfe8;
+  --font-display: var(--nf-display), system-ui, sans-serif;
+  --font-sans: var(--nf-text), system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
 body {
-  background: #fafafa;
-  color: #171717;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-turmeric);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 @layer components {
   .input {
-    @apply w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-orange-500;
+    @apply w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-ink outline-none placeholder:text-muted/70 focus:border-board;
   }
   .btn-primary {
-    @apply rounded-lg bg-orange-600 px-4 py-2 font-medium text-white hover:bg-orange-700 disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-chili px-4 py-2.5 font-semibold text-white transition-colors hover:bg-chili-dark disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-secondary {
-    @apply rounded-lg border border-neutral-300 bg-white px-4 py-2 font-medium hover:bg-neutral-100 disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 py-2.5 font-medium text-ink transition-colors hover:border-board disabled:cursor-not-allowed disabled:opacity-50;
   }
+
+  /* Receipt paper with a torn (zigzag) bottom edge — cart and order ticket. */
+  .receipt {
+    @apply relative bg-white;
+    --tooth: 10px;
+    mask:
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(2 * var(--tooth)) 100%;
+    padding-bottom: calc(var(--tooth) + 1rem);
+  }
+
+  /* Menu board leader dots between item name and price. */
+  .leader {
+    @apply mx-2 min-w-6 flex-1 translate-y-[-0.3em] border-b-2 border-dotted border-white/25;
+  }
+}
+
+/* Leaflet: our pins are plain HTML, drop the default white box. */
+.pin-icon {
+  background: none;
+  border: none;
+}
+.leaflet-container {
+  font-family: var(--font-sans);
+}
+/* Mute the OSM basemap so the venue pins carry the color. */
+.leaflet-tile-pane {
+  filter: grayscale(1) contrast(0.88) brightness(1.06);
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 14px;
 }

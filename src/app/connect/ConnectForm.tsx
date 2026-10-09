@@ -11,9 +11,9 @@ export function ConnectForm({ countries }: { countries: CountryInfo[] }) {
 
   if (state.done) {
     return (
-      <div className="rounded-xl border border-green-200 bg-green-50 p-6">
-        <h2 className="font-semibold text-green-800">Заявка отправлена</h2>
-        <p className="mt-1 text-sm text-green-800">Мы свяжемся с вами в ближайшее время.</p>
+      <div className="rounded-2xl bg-white p-6">
+        <h2 className="font-display text-lg font-bold text-herb">Заявка отправлена</h2>
+        <p className="mt-1 text-sm text-muted">Перезвоним в течение рабочего дня и расскажем, как подключиться.</p>
       </div>
     );
   }
@@ -21,17 +21,8 @@ export function ConnectForm({ countries }: { countries: CountryInfo[] }) {
   return (
     <form action={action} className="space-y-3">
       <input name="venueName" placeholder="Название заведения" className="input" required />
-      <select name="country" className="input" required defaultValue="">
-        <option value="" disabled>
-          Страна
-        </option>
-        {countries.map((c) => (
-          <option key={c.code} value={c.code}>
-            {c.name}
-          </option>
-        ))}
-      </select>
-      <input name="city" placeholder="Город" className="input" required />
+      <input type="hidden" name="country" value={countries[0]?.code ?? "RU"} />
+      <input name="city" defaultValue="Москва" placeholder="Город" className="input" required />
       <input name="address" placeholder="Адрес" className="input" required />
       <input name="contactName" placeholder="Контактное лицо" className="input" required />
       <input name="phone" type="tel" placeholder="Телефон" className="input" required />

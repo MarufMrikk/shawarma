@@ -28,70 +28,83 @@ export default async function OrderPage({ params }: PageProps<"/order/[id]">) {
     minute: "2-digit",
   }).format(order.pickupAt);
 
+  const hint: Record<OrderStatus, string> = {
+    new: "Шавермная получила заказ и скоро его примет.",
+    accepted: "Заказ принят. Начнут готовить к вашему приходу.",
+    cooking: "Готовим вашу шаверму.",
+    ready: "Всё готово — подходите и назовите код.",
+    picked_up: "Заказ выдан. Приятного аппетита!",
+    cancelled: "Заказ отменён шавермной. Позвоните им, если есть вопросы.",
+  };
+
   return (
     <>
       <SiteHeader />
       <AutoRefresh intervalMs={8000} enabled={!terminal} />
-      <main className="mx-auto w-full max-w-lg px-4 py-8">
-        <div className="rounded-2xl border border-neutral-200 bg-white p-6 text-center">
-          <div className="text-sm text-neutral-500">Код получения</div>
-          <div className="my-2 text-6xl font-bold tracking-[0.3em] text-orange-600">{order.pickupCode}</div>
-          <div className="text-sm text-neutral-600">Назовите код повару при получении</div>
-          <div
-            className={`mt-4 inline-block rounded-full px-4 py-1 text-sm font-semibold ${
-              order.status === "cancelled"
-                ? "bg-red-100 text-red-700"
-                : order.status === "ready"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-orange-100 text-orange-700"
-            }`}
-          >
-            {STATUS_LABELS[order.status]}
-          </div>
-          {order.status !== "cancelled" && (
-            <div className="mt-4 flex gap-1">
-              {PROGRESS.map((s, i) => (
-                <div key={s} className={`h-1.5 flex-1 rounded ${i <= step ? "bg-orange-500" : "bg-neutral-200"}`} />
-              ))}
+      <main className="mx-auto w-full max-w-md px-4 py-8">
+        <div className="receipt rounded-t-3xl px-6 pt-6 shadow-[0_10px_30px_rgba(42,31,61,.08)]">
+          <div className="text-center">
+            <p className="text-sm text-muted">Код для получения</p>
+            <div className="mx-auto mt-2 inline-block rounded-2xl bg-turmeric px-6 py-3 font-display text-6xl font-extrabold tracking-[0.12em] text-board">
+              {order.pickupCode}
             </div>
-          )}
-        </div>
+            <p
+              className={`mt-5 font-display text-xl font-bold ${
+                order.status === "cancelled" ? "text-chili" : order.status === "ready" ? "text-herb" : "text-board"
+              }`}
+            >
+              {STATUS_LABELS[order.status]}
+            </p>
+            <p className="mt-1 text-sm text-muted">{hint[order.status]}</p>
+          </div>
 
-        <section className="mt-6 space-y-1 text-sm">
-          <div>
-            <Link href={`/v/${order.venue.slug}`} className="font-semibold hover:text-orange-600">
+          {order.status !== "cancelled" && (
+            <ol className="mt-5 grid grid-cols-5 gap-1" aria-label="Ход заказа">
+              {PROGRESS.map((s, i) => (
+                <li key={s} className={`h-1.5 rounded-full ${i <= step ? "bg-chili" : "bg-line"}`}>
+                  <span className="sr-only">{STATUS_LABELS[s]}</span>
+                </li>
+              ))}
+            </ol>
+          )}
+
+          <div className="mt-6 border-t-2 border-dashed border-line pt-4 text-sm">
+            <Link href={`/v/${order.venue.slug}`} className="font-semibold hover:text-chili">
               {order.venue.name}
             </Link>
+            <div className="text-muted">{order.venue.address}</div>
+            <div className="mt-1">
+              Ждём вас к <b>{pickupTime}</b>
+            </div>
           </div>
-          <div className="text-neutral-600">
-            {order.venue.city}, {order.venue.address}
-          </div>
-          <div className="text-neutral-600">Ждём вас к {pickupTime}</div>
-        </section>
 
-        <ul className="mt-6 divide-y divide-neutral-200 rounded-xl border border-neutral-200 bg-white text-sm">
-          {order.items.map((item) => {
-            const modifiers = item.modifiers as ModifierSnapshot[];
-            return (
-              <li key={item.id} className="flex justify-between gap-2 p-3">
-                <div>
+          <ul className="mt-4 divide-y divide-dashed divide-line border-t-2 border-dashed border-line text-sm">
+            {order.items.map((item) => {
+              const modifiers = item.modifiers as ModifierSnapshot[];
+              return (
+                <li key={item.id} className="flex justify-between gap-3 py-2.5">
                   <div>
-                    {item.name} × {item.quantity}
+                    <div>
+                      {item.name} × {item.quantity}
+                    </div>
+                    {modifiers.length > 0 && (
+                      <div className="text-muted">{modifiers.map((m) => m.name).join(", ")}</div>
+                    )}
                   </div>
-                  {modifiers.length > 0 && (
-                    <div className="text-neutral-500">{modifiers.map((m) => m.name).join(", ")}</div>
-                  )}
-                </div>
-                <div className="shrink-0">{formatMoney(item.lineTotal, order.currency)}</div>
-              </li>
-            );
-          })}
-          <li className="flex justify-between p-3 font-semibold">
-            <span>Итого</span>
-            <span>{formatMoney(order.totalAmount, order.currency)}</span>
-          </li>
-        </ul>
-        <p className="mt-3 text-xs text-neutral-500">Оплата при получении. Сохраните ссылку на эту страницу.</p>
+                  <div className="shrink-0">{formatMoney(item.lineTotal, order.currency)}</div>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="flex items-baseline justify-between border-t-2 border-dashed border-line pt-3">
+            <span className="font-semibold">Итого</span>
+            <span className="font-display text-xl font-bold">{formatMoney(order.totalAmount, order.currency)}</span>
+          </div>
+          <p className="mt-2 text-xs text-muted">Оплата в шавермной при получении.</p>
+        </div>
+        <p className="mt-4 text-center text-xs text-muted">
+          Статус обновляется сам. Сохраните ссылку на эту страницу, чтобы вернуться к заказу.
+        </p>
       </main>
     </>
   );

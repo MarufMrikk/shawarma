@@ -30,3 +30,6 @@
 - Currency can't be changed while a venue has menu items (prices are in that currency's minor units).
 - Owners can invite and remove STAFF accounts; admins can invite OWNER or STAFF.
 - Supported countries list (CIS) lives in `src/lib/countries.ts` with default currency/timezone.
+- Launch scope narrowed to Russia/Moscow (user request): `COUNTRIES` = RU only, seeds = 5 Moscow venues; multi-country schema kept.
+- UI: Unbounded (display) + Golos Text (body) via next/font; aubergine/chili/turmeric palette; menu as a dark "menu board", cart/order as a receipt.
+- Map: plain OSM tiles muted with a CSS filter (CARTO basemaps now need an API key); HTML pill pins; list ↔ map selection sync.
