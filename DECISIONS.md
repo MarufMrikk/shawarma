@@ -33,3 +33,5 @@
 - Launch scope narrowed to Russia/Moscow (user request): `COUNTRIES` = RU only, seeds = 5 Moscow venues; multi-country schema kept.
 - UI (v2): street-kiosk lightbox look — Alumni Sans (signage) + Onest (text), kiosk yellow / ketchup red / charcoal; line pictograms per menu category; dark high-contrast kitchen screen.
 - Map: plain OSM tiles muted with a CSS filter (CARTO basemaps now need an API key); HTML price-tag pins ("от N ₽" = cheapest item of the first menu category); list ↔ map selection sync.
+- Customer site and partner portal are separate surfaces: all staff/venue routes live under `/partner` (own branding, noindex), the customer site links to none of them.
+- Staff auth is scoped to `/partner`: Auth.js `basePath=/partner/api/auth`, cookies with `path=/partner`; optional `PARTNER_HOST` makes `src/proxy.ts` serve the portal only on its own host.

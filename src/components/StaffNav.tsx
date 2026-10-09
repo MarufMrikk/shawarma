@@ -19,7 +19,7 @@ export function StaffNav({ links }: { links: NavLink[] }) {
           key={l.href}
           href={l.href}
           aria-current={l.href === active ? "page" : undefined}
-          className={`rounded-md px-2.5 py-1 ${l.href === active ? "bg-board text-kiosk" : "hover:bg-board/10"}`}
+          className={`rounded-md px-2.5 py-1 ${l.href === active ? "bg-kiosk text-board" : "text-white/80 hover:bg-white/10 hover:text-white"}`}
         >
           {l.label}
         </Link>

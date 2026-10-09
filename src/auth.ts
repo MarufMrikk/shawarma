@@ -23,6 +23,12 @@ declare module "@auth/core/jwt" {
   }
 }
 
+const cookieOptions = {
+  path: "/partner",
+  sameSite: "lax" as const,
+  secure: process.env.NODE_ENV === "production",
+};
+
 const credentialsSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   password: z.string().min(1),
@@ -30,8 +36,16 @@ const credentialsSchema = z.object({
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
-  pages: { signIn: "/login" },
+  pages: { signIn: "/partner/login" },
   trustHost: true,
+  // Staff auth lives entirely inside the partner area: its endpoints and cookies are
+  // scoped to /partner, so the customer site never receives a staff session.
+  basePath: "/partner/api/auth",
+  cookies: {
+    sessionToken: { name: "partner.session", options: { ...cookieOptions, httpOnly: true } },
+    csrfToken: { name: "partner.csrf", options: { ...cookieOptions, httpOnly: true } },
+    callbackUrl: { name: "partner.callback", options: cookieOptions },
+  },
   providers: [
     Credentials({
       credentials: { email: {}, password: {} },

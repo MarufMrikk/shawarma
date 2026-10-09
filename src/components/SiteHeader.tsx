@@ -11,12 +11,6 @@ export function SiteHeader() {
         <Link href="/" aria-label="На главную">
           <Wordmark />
         </Link>
-        <nav className="ml-auto text-sm font-semibold">
-          <Link href="/connect" className="whitespace-nowrap underline-offset-4 hover:underline">
-            <span className="sm:hidden">Для шавермных</span>
-            <span className="hidden sm:inline">Подключить шавермную</span>
-          </Link>
-        </nav>
       </div>
     </header>
   );

@@ -19,8 +19,16 @@ npm run dev
 | `DATABASE_URL`  | строка подключения PostgreSQL                     |
 | `AUTH_SECRET`   | секрет Auth.js (`npx auth secret`)                |
 | `SEED_PASSWORD` | пароль всех тестовых пользователей (`password123`) |
+| `PARTNER_HOST`  | необязательно: отдельный домен кабинета шавермных |
+| `SITE_URL`      | необязательно: адрес клиентского сайта для ссылок из кабинета |
 
-## Тестовые пользователи
+## Два сайта
+
+- `/` — сайт для гостей: карта, меню, заказ. Без регистрации и без входа.
+- `/partner` — кабинет шавермных: заявка на подключение, вход, кухня, меню, админка.
+  Сессия сотрудника живёт только в `/partner`. С `PARTNER_HOST` кабинет открывается только на своём домене.
+
+## Тестовые пользователи (вход: `/partner/login`)
 
 `admin@shawarma.local`, `owner-tverskaya@shawarma.local`, `cook-tverskaya@shawarma.local` (также `-myasnitskaya`, `-arbat`, `-kurskaya`, `-lesnaya`).
 
