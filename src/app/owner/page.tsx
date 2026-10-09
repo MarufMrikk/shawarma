@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { ActionForm, SubmitButton } from "@/components/ActionForm";
+import { VenueUsers } from "@/components/VenueUsers";
 import { db } from "@/lib/db";
 import { isOpenAt } from "@/lib/hours";
 import { requireVenueUser } from "@/lib/session";
-import { updateVenueInfo } from "./actions";
+import { inviteStaff, removeStaff, updateVenueInfo } from "./actions";
 
 export const metadata = { title: "Заведение" };
 
@@ -78,6 +79,11 @@ export default async function OwnerPage() {
             Страница заведения для клиентов →
           </Link>
         )}
+      </section>
+
+      <section className="md:col-span-2">
+        <h2 className="mb-3 text-lg font-semibold">Сотрудники</h2>
+        <VenueUsers venueId={venue.id} inviteAction={inviteStaff} removeAction={removeStaff} allowOwnerRole={false} />
       </section>
     </div>
   );

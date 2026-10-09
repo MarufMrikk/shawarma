@@ -22,3 +22,11 @@
 - Owner address change re-geocodes via Nominatim; save fails if the address isn't found.
 - Country, currency and timezone are read-only for owners (set by admin).
 - Staff (cook) accounts are not managed in the owner UI yet; see phase 4 invites.
+- No email sending: invites are one-time links (7 days) shown to admin/owner to forward manually.
+- Approval creates the venue already `approved` (visible once it has a menu and is open) and an OWNER invite; venue coords geocoded best-effort.
+- Lead form has an optional email (prefills owner email on approval); honeypot field instead of CAPTCHA.
+- Lead status changes are auto-logged as notes; "connected" is set only through approval.
+- Admin summary/order dates are UTC days; summary counts total / picked up / cancelled per venue.
+- Currency can't be changed while a venue has menu items (prices are in that currency's minor units).
+- Owners can invite and remove STAFF accounts; admins can invite OWNER or STAFF.
+- Supported countries list (CIS) lives in `src/lib/countries.ts` with default currency/timezone.

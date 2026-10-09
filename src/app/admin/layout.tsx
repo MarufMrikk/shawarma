@@ -5,7 +5,12 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const user = await requireRole("ADMIN");
   return (
     <>
-      <StaffHeader title="Админка" userName={user.name ?? ""} links={[{ href: "/admin", label: "Сводка" }]} />
+      <StaffHeader title="Админка" userName={user.name ?? ""} links={[
+          { href: "/admin", label: "Сводка" },
+          { href: "/admin/leads", label: "Заявки" },
+          { href: "/admin/venues", label: "Заведения" },
+          { href: "/admin/orders", label: "Заказы" },
+        ]} />
       <main className="mx-auto w-full max-w-6xl px-4 py-6">{children}</main>
     </>
   );

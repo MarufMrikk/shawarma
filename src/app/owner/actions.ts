@@ -8,6 +8,7 @@ import { hhmmToMinutes } from "@/lib/hours";
 import { parseMoney } from "@/lib/money";
 import { toE164 } from "@/lib/phone";
 import { requireVenueUser } from "@/lib/session";
+import { inviteVenueUser } from "@/lib/users";
 
 const str = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 
@@ -235,5 +236,21 @@ export async function deleteOption(_prev: string | null, fd: FormData): Promise<
   }
   await db.modifier.delete({ where: { id: option.id } });
   revalidatePath(`/owner/menu/${option.group.menuItemId}`);
+  return null;
+}
+
+// ---------- staff ----------
+
+export async function inviteStaff(_prev: string | null, fd: FormData): Promise<string | null> {
+  const venue = await ownerVenue();
+  const error = await inviteVenueUser(venue.id, str(fd, "email"), str(fd, "name"), "STAFF");
+  revalidatePath("/owner");
+  return error;
+}
+
+export async function removeStaff(_prev: string | null, fd: FormData): Promise<string | null> {
+  const venue = await ownerVenue();
+  await db.user.deleteMany({ where: { id: str(fd, "id"), venueId: venue.id, role: "STAFF" } });
+  revalidatePath("/owner");
   return null;
 }
